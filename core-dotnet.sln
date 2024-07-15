@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{66A67821-0FA3-4B08-A00E-55B2D587AC11}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Coinbase.net", "src\Coinbase.net\Coinbase.net.csproj", "{B921A364-6286-4434-A8E1-B7501EE70DBD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B921A364-6286-4434-A8E1-B7501EE70DBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B921A364-6286-4434-A8E1-B7501EE70DBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B921A364-6286-4434-A8E1-B7501EE70DBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B921A364-6286-4434-A8E1-B7501EE70DBD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B921A364-6286-4434-A8E1-B7501EE70DBD} = {66A67821-0FA3-4B08-A00E-55B2D587AC11}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AE42155F-884C-427A-AC8B-1F3316D4D517}
+	EndGlobalSection
+EndGlobal
