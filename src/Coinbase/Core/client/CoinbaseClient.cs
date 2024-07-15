@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Coinbase
+namespace Coinbase.Core.Client
 {
   using System;
   using System.Collections.Generic;

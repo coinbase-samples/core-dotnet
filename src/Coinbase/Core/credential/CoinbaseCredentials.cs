@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-namespace Coinbase.Core.Credentials
+namespace Coinbase.Core.Credential
 {
   using System;
   using System.Security.Cryptography;

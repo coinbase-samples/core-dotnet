@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Coinbase
+namespace Coinbase.Core.Error
 {
     /// <summary>
     /// Exception thrown when an error occurs in the Coinbase API Client.

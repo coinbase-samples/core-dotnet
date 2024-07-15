@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Coinbase
+namespace Coinbase.Core.Service
 {
     using System.Net.Http;
     using System.Threading;
