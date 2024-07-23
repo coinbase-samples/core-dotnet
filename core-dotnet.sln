@@ -1,30 +1,30 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.5.002.0
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{66A67821-0FA3-4B08-A00E-55B2D587AC11}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{61A0B2F5-A904-46D0-8255-A53D4C831257}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Coinbase.net", "src\Coinbase.net\Coinbase.net.csproj", "{B921A364-6286-4434-A8E1-B7501EE70DBD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Coinbase", "Coinbase", "{036D8A7F-C2EA-411D-AC2B-89002C803EB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coinbase.core", "src\Coinbase\Core\Coinbase.core.csproj", "{D59375C2-9E15-4D27-AB75-7EAE8D8B59CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B921A364-6286-4434-A8E1-B7501EE70DBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B921A364-6286-4434-A8E1-B7501EE70DBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B921A364-6286-4434-A8E1-B7501EE70DBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B921A364-6286-4434-A8E1-B7501EE70DBD}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{B921A364-6286-4434-A8E1-B7501EE70DBD} = {66A67821-0FA3-4B08-A00E-55B2D587AC11}
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D59375C2-9E15-4D27-AB75-7EAE8D8B59CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D59375C2-9E15-4D27-AB75-7EAE8D8B59CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D59375C2-9E15-4D27-AB75-7EAE8D8B59CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D59375C2-9E15-4D27-AB75-7EAE8D8B59CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {AE42155F-884C-427A-AC8B-1F3316D4D517}
+	GlobalSection(NestedProjects) = preSolution
+		{036D8A7F-C2EA-411D-AC2B-89002C803EB0} = {61A0B2F5-A904-46D0-8255-A53D4C831257}
+		{D59375C2-9E15-4D27-AB75-7EAE8D8B59CE} = {036D8A7F-C2EA-411D-AC2B-89002C803EB0}
 	EndGlobalSection
 EndGlobal

@@ -16,14 +16,15 @@
 
 namespace Coinbase.Core.Service
 {
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
+  using System.Net.Http;
+  using System.Threading;
+  using System.Threading.Tasks;
+  using Coinbase.Core.Client;
 
-    /// <summary>
-    /// Abstract class that represents any Coinbase API Service.
-    /// </summary>
-    public abstract class CoinbaseService
+  /// <summary>
+  /// Abstract class that represents any Coinbase API Service.
+  /// </summary>
+  public abstract class CoinbaseService
     {
       private readonly ICoinbaseClient client;
       private readonly string basePath;
@@ -75,7 +76,6 @@ namespace Coinbase.Core.Service
               path,
               cancellationToken).ConfigureAwait(false);
       }
-
 
       protected RequestOptions SetupRequestOptions(RequestOptions requestOptions)
       {

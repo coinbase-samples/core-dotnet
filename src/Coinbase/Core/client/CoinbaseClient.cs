@@ -17,30 +17,30 @@
 namespace Coinbase.Core.Client
 {
   using System;
-  using System.Collections.Generic;
-  using System.IO;
-  using System.Net;
   using System.Net.Http;
-  using System.Reflection;
-  using System.Runtime.CompilerServices;
-  using System.Threading;
   using System.Threading.Tasks;
   using Coinbase.Core.Credentials;
+  using Coinbase.Core.Error;
+  using Newtonsoft.Json;
 
   /// <summary>
   /// Interface that represents a Coinbase API Client.
   /// </summary>
   public class CoinbaseClient : ICoinbaseClient
   {
+    private readonly IHttpClient httpClient;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CoinbaseClient"/> class.
     /// </summary>
+    /// <param name="httpClient">Http Client.</param>
     /// <param name="coinbaseCredentials">Api Credentials.</param>
     /// <param name="apiBasePath">Base url path for the API.</param>
     /// <exception cref="ArgumentException">
     /// Thrown if the Credentials are not valid or a base path is not provided.
     /// </exception>
     public CoinbaseClient(
+      IHttpClient httpClient,
       string coinbaseCredentials = null,
       string apiBasePath = null)
     {
@@ -53,6 +53,8 @@ namespace Coinbase.Core.Client
       {
         throw new ArgumentException("API base path cannot be null or empty", nameof(apiBasePath));
       }
+
+      this.httpClient = httpClient;
     }
 
     /// <inheritdoc/>
@@ -61,10 +63,34 @@ namespace Coinbase.Core.Client
     /// <inheritdoc/>
     public CoinbaseCredentials Credentials { get; }
 
+    public IHttpClient HttpClient { get; }
+
     /// <inheritdoc/>
-    public Task<T> SendRequestAsync<T>(HttpMethod method, string path, object options = null)
+    public async Task<T> SendRequestAsync<T>(HttpMethod method, string requestUri, object options = null)
     {
-        throw new NotImplementedException();
+      // Send the HTTP request
+      HttpResponseMessage response = await httpClient.SendAsync(method, requestUri, options);
+
+      if (response.IsSuccessStatusCode)
+      {
+        try
+        {
+          string responseBody = await response.Content.ReadAsStringAsync();
+          return JsonConvert.DeserializeObject<T>(responseBody);
+        }
+        catch (Newtonsoft.Json.JsonException)
+        {
+          throw new CoinbaseException(
+              "Error deserializing response body",
+              response.StatusCode,
+              response.ReasonPhrase);
+        }
+      }
+      else
+      {
+        // Handle the error
+        throw new Exception("Error");
+      }
     }
   }
 }

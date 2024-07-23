@@ -16,37 +16,52 @@
 
 namespace Coinbase.Core.Error
 {
-    /// <summary>
-    /// Exception thrown when an error occurs in the Coinbase API.
-    /// </summary>
-    public class CoinbaseException : System.Exception
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a message.
-        /// </summary>
-        /// <param name="message">Error message.</param>
-        public CoinbaseException(string message)
-            : base(message)
-        {
-        }
+  using System.Net;
+  /// <summary>
+  /// Exception thrown when an error occurs in the Coinbase API.
+  /// </summary>
+  public class CoinbaseException : System.Exception
+  {
+      /// <summary>
+      /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a message.
+      /// </summary>
+      /// <param name="message">Error message.</param>
+      public CoinbaseException(string message)
+          : base(message)
+      {
+      }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a message and a cause.
-        /// </summary>
-        /// <param name="message">Error Message.</param>
-        /// <param name="cause">Underlying exception.</param>
-        public CoinbaseException(string message, System.Exception cause)
-            : base(message, cause)
-        {
-        }
+      /// <summary>
+      /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a message and a cause.
+      /// </summary>
+      /// <param name="message">Error Message.</param>
+      /// <param name="cause">Underlying exception.</param>
+      public CoinbaseException(string message, System.Exception cause)
+          : base(message, cause)
+      {
+      }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a cause.
-        /// </summary>
-        /// <param name="cause">Underlying exception.</param>
-        public CoinbaseException(System.Exception cause)
-            : base(cause.Message, cause)
-        {
-        }
-    }
+      /// <summary>
+      /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a cause.
+      /// </summary>
+      /// <param name="cause">Underlying exception.</param>
+      public CoinbaseException(System.Exception cause)
+          : base(cause.Message, cause)
+      {
+      }
+
+      public CoinbaseException(HttpStatusCode httpStatusCode, string message)
+          : base(message)
+      {
+          this.StatusCode = httpStatusCode;
+      }
+
+      public CoinbaseException(HttpStatusCode httpStatusCode, string message, System.Exception cause)
+          : base(message, cause)
+      {
+          this.StatusCode = httpStatusCode;
+      }
+
+      public HttpStatusCode StatusCode { get; set; }
+  }
 }

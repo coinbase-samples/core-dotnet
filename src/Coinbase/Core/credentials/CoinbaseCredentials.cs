@@ -14,12 +14,12 @@
  *  limitations under the License.
  */
 
-namespace Coinbase.Core.Credential
+namespace Coinbase.Core.Credentials
 {
   using System;
   using System.Security.Cryptography;
   using System.Text;
-  using System.Text.RegularExpressions;
+  using Coinbase.Core.Error;
   using Newtonsoft.Json;
 
   /// <summary>
@@ -89,6 +89,9 @@ namespace Coinbase.Core.Credential
       this.signingKey = signingKey;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CoinbaseCredentials"/> class.
+    /// </summary>
     public CoinbaseCredentials()
     {
     }
