@@ -17,6 +17,7 @@
 namespace Coinbase.Core.Client
 {
   using System.Net.Http;
+  using System.Threading;
   using System.Threading.Tasks;
   using Coinbase.Core.Credentials;
 
@@ -41,11 +42,13 @@ namespace Coinbase.Core.Client
     /// <typeparam name="T">Return type of the Request.</typeparam>
     /// <param name="method">HTTP Method for the Request.</param>
     /// <param name="path">API Path.</param>
-    /// <param name="options">Thing.</param>
+    /// <param name="request">Request parameters.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task object representing the async operation.</returns>
     Task<T> SendRequestAsync<T>(
       HttpMethod method,
       string path,
-      object options = null);
+      ICoinbaseRequest request,
+      CancellationToken cancellationToken);
     }
 }

@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-namespace Coinbase.Core.Client
+namespace Coinbase.Core.Http
 {
-  using System.Net.Http;
+  using System.Threading;
   using System.Threading.Tasks;
 
   public interface IHttpClient
   {
-    Task<HttpResponseMessage> SendAsync(HttpMethod method, string requestUri, object options = null);
+    Task<CoinbaseResponse> SendAsyncRequest(
+        CoinbaseHttpRequest request,
+        CancellationToken cancellationToken);
   }
 }

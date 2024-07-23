@@ -18,8 +18,10 @@ namespace Coinbase.Core.Client
 {
   using System;
   using System.Net.Http;
+  using System.Threading;
   using System.Threading.Tasks;
   using Coinbase.Core.Credentials;
+  using Coinbase.Core.Http;
   using Coinbase.Core.Error;
   using Newtonsoft.Json;
 
@@ -66,31 +68,27 @@ namespace Coinbase.Core.Client
     public IHttpClient HttpClient { get; }
 
     /// <inheritdoc/>
-    public async Task<T> SendRequestAsync<T>(HttpMethod method, string requestUri, object options = null)
+    public async Task<T> SendRequestAsync<T>(HttpMethod method, string requestUri, ICoinbaseRequest options, CancellationToken cancellationToken)
     {
+      CoinbaseHttpRequest request = new CoinbaseHttpRequest(requestUri, method.Method, this.Credentials, options);
       // Send the HTTP request
-      HttpResponseMessage response = await httpClient.SendAsync(method, requestUri, options);
+      CoinbaseResponse response = await httpClient.SendAsyncRequest(request, cancellationToken);
 
-      if (response.IsSuccessStatusCode)
+      // If the response is successful return the content as type T
+      if (response.StatusCode != System.Net.HttpStatusCode.OK)
       {
         try
         {
-          string responseBody = await response.Content.ReadAsStringAsync();
-          return JsonConvert.DeserializeObject<T>(responseBody);
+          var error = JsonConvert.DeserializeObject<CoinbaseErrorMessage>(response.Content);
+          throw new CoinbaseClientException(error.Message);
         }
-        catch (Newtonsoft.Json.JsonException)
+        catch (JsonReaderException)
         {
-          throw new CoinbaseException(
-              "Error deserializing response body",
-              response.StatusCode,
-              response.ReasonPhrase);
+          throw new CoinbaseException(response.Content);
         }
       }
-      else
-      {
-        // Handle the error
-        throw new Exception("Error");
-      }
+
+      return JsonConvert.DeserializeObject<T>(response.Content);
     }
   }
 }

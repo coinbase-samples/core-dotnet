@@ -16,44 +16,33 @@
 
 namespace Coinbase.Core.Http
 {
-  using System.Net.Http;
+  using System.Net;
+  using System.Net.Http.Headers;
 
+  /// <summary>Represents the response from a Coinbase API request.</summary>
   public class CoinbaseResponse
   {
-    private readonly int statusCode;
-    private readonly string body;
-    private readonly string contentType;
-
-    public CoinbaseResponse(int statusCode, string body, string contentType)
+    /// <summary>Initializes a new instance of the <see cref="CoinbaseResponse"/> class.</summary>
+    /// <param name="statusCode">The HTTP status code.</param>
+    /// <param name="headers">The HTTP headers of the response.</param>
+    /// <param name="content">The body of the response.</param>
+    public CoinbaseResponse(HttpStatusCode statusCode, HttpResponseHeaders headers, string content)
     {
-      this.statusCode = statusCode;
-      this.body = body;
-      this.contentType = contentType;
+        this.StatusCode = statusCode;
+        this.Headers = headers;
+        this.Content = content;
     }
 
-    /// <summary>
-    /// Pulls the status code and response payload from the HttpResponseMessage object.
-    /// Handles the error object that can be returned by the API.
-    /// </summary>
-    public CoinbaseResponse(HttpResponseMessage response)
-    {
-      if (response == null)
-      {
-        this.statusCode = 0;
-        this.body = string.Empty;
-        this.contentType = string.Empty;
-        return;
-      }
+    /// <summary>Gets the HTTP status code of the response.</summary>
+    /// <value>The HTTP status code of the response.</value>
+    public HttpStatusCode StatusCode { get; }
 
-      this.statusCode = (int)response.StatusCode;
+    /// <summary>Gets the HTTP headers of the response.</summary>
+    /// <value>The HTTP headers of the response.</value>
+    public HttpResponseHeaders Headers { get; }
 
-      if (response.IsSuccessStatusCode) {
-        string body = await response.Content.ReadAsStringAsync();
-
-      }
-
-      this.body = response.Content.ReadAsStringAsync().Result;
-      this.contentType = response.Content.Headers.ContentType.MediaType;
-    }
+    /// <summary>Gets the body of the response.</summary>
+    /// <value>The body of the response.</value>
+    public string Content { get; }
   }
 }

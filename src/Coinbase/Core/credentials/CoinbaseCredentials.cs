@@ -114,7 +114,7 @@ namespace Coinbase.Core.Credentials
       set { this.signingKey = value; }
     }
 
-    public string Sign(long timestamp, string method, string path, string body)
+    public string Sign(string timestamp, string method, string path, string body)
     {
       try
       {
