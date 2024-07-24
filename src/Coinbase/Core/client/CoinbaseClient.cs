@@ -35,28 +35,32 @@ namespace Coinbase.Core.Client
     /// <summary>
     /// Initializes a new instance of the <see cref="CoinbaseClient"/> class.
     /// </summary>
-    /// <param name="httpClient">Http Client.</param>
+    /// <param name="httpClient">Http Client, will default to <see cref="SystemNetHttpClient"/>.</param>
     /// <param name="coinbaseCredentials">Api Credentials.</param>
     /// <param name="apiBasePath">Base url path for the API.</param>
     /// <exception cref="ArgumentException">
     /// Thrown if the Credentials are not valid or a base path is not provided.
     /// </exception>
     public CoinbaseClient(
-      IHttpClient httpClient,
-      string coinbaseCredentials = null,
-      string apiBasePath = null)
+      CoinbaseCredentials coinbaseCredentials,
+      string apiBasePath,
+      IHttpClient httpClient = null)
     {
       if (coinbaseCredentials == null)
       {
         throw new ArgumentException("Credentials cannot be null", nameof(coinbaseCredentials));
       }
 
-      if (string.IsNullOrEmpty(apiBasePath.Trim()))
+      this.Credentials = coinbaseCredentials;
+
+      if (string.IsNullOrWhiteSpace(apiBasePath.Trim()))
       {
         throw new ArgumentException("API base path cannot be null or empty", nameof(apiBasePath));
       }
 
-      this.httpClient = httpClient;
+      this.ApiBasePath = apiBasePath;
+
+      this.httpClient = httpClient ?? new SystemNetHttpClient();
     }
 
     /// <inheritdoc/>
