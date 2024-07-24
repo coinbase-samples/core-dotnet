@@ -11,7 +11,7 @@ namespace Coinbase.Core.Http
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Standard client to make requests to Stripe's API, using
+    /// Standard client to make requests to Coinbase's API, using
     /// <see cref="System.Net.Http.HttpClient"/> to send HTTP requests. It can
     /// automatically retry failed requests when it's safe to do so.
     /// </summary>
@@ -19,22 +19,6 @@ namespace Coinbase.Core.Http
     {
         /// <summary>Default maximum number of retries made by the client.</summary>
         public const int DefaultMaxNumberRetries = 2;
-
-        private const string StripeNetTargetFramework =
-#if NET5_0
-            "net5.0"
-#elif NET6_0
-             "net6.0"
-#elif NETCOREAPP3_1
-             "netcoreapp3.1"
-#elif NETSTANDARD2_0
-            "netstandard2.0"
-#elif NET461
-            "net461"
-#else
-#error "Unknown target framework"
-#endif
-            ;
 
         private static readonly Lazy<System.Net.Http.HttpClient> LazyDefaultHttpClient
             = new Lazy<System.Net.Http.HttpClient>(BuildDefaultSystemNetHttpClient);
@@ -96,9 +80,6 @@ namespace Coinbase.Core.Http
         /// <returns>The new instance of the <see cref="System.Net.Http.HttpClient"/> class.</returns>
         public static System.Net.Http.HttpClient BuildDefaultSystemNetHttpClient()
         {
-            // We set the User-Agent and X-Stripe-Client-User-Agent headers in each request
-            // message rather than through the client's `DefaultRequestHeaders` because we
-            // want these headers to be present even when a custom HTTP client is used.
             return new System.Net.Http.HttpClient
             {
                 Timeout = DefaultHttpTimeout,
@@ -199,21 +180,6 @@ namespace Coinbase.Core.Http
                 return true;
             }
 
-            // The API may ask us not to retry (eg; if doing so would be a no-op)
-            // or advise us to retry (eg; in cases of lock timeouts); we defer to that.
-            if (headers != null && headers.Contains("Stripe-Should-Retry"))
-            {
-                var value = headers.GetValues("Stripe-Should-Retry").First();
-
-                switch (value)
-                {
-                    case "true":
-                        return true;
-                    case "false":
-                        return false;
-                }
-            }
-
             // Retry on conflict errors.
             if (statusCode == HttpStatusCode.Conflict)
             {
@@ -221,10 +187,6 @@ namespace Coinbase.Core.Http
             }
 
             // Retry on 500, 503, and other internal errors.
-            //
-            // Note that we expect the Stripe-Should-Retry header to be false
-            // in most cases when a 500 is returned, since our idempotency framework
-            // would typically replay it anyway.
             if (statusCode.HasValue && ((int)statusCode.Value >= 500))
             {
                 return true;
