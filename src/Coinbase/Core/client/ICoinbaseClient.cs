@@ -48,7 +48,7 @@ namespace Coinbase.Core.Client
     Task<T> SendRequestAsync<T>(
       HttpMethod method,
       string path,
-      ICoinbaseRequest request,
+      object request,
       CancellationToken cancellationToken);
     }
 }

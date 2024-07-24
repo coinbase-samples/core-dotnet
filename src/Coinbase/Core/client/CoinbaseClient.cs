@@ -21,8 +21,8 @@ namespace Coinbase.Core.Client
   using System.Threading;
   using System.Threading.Tasks;
   using Coinbase.Core.Credentials;
-  using Coinbase.Core.Http;
   using Coinbase.Core.Error;
+  using Coinbase.Core.Http;
   using Newtonsoft.Json;
 
   /// <summary>
@@ -68,11 +68,12 @@ namespace Coinbase.Core.Client
     public IHttpClient HttpClient { get; }
 
     /// <inheritdoc/>
-    public async Task<T> SendRequestAsync<T>(HttpMethod method, string requestUri, ICoinbaseRequest options, CancellationToken cancellationToken)
+    public async Task<T> SendRequestAsync<T>(HttpMethod method, string requestUri, object options, CancellationToken cancellationToken)
     {
       CoinbaseHttpRequest request = new CoinbaseHttpRequest(requestUri, method.Method, this.Credentials, options);
+
       // Send the HTTP request
-      CoinbaseResponse response = await httpClient.SendAsyncRequest(request, cancellationToken);
+      CoinbaseResponse response = await this.httpClient.SendAsyncRequest(request, cancellationToken);
 
       // If the response is successful return the content as type T
       if (response.StatusCode != System.Net.HttpStatusCode.OK)

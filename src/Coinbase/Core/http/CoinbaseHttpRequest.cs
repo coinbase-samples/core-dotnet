@@ -15,7 +15,7 @@
  */
 
 namespace Coinbase.Core.Http
- {
+{
   using System;
   using System.Collections;
   using System.Collections.Generic;
@@ -30,20 +30,21 @@ namespace Coinbase.Core.Http
     private readonly string body;
     private Dictionary<string, string> headers;
 
-    public CoinbaseHttpRequest(string path, string method, CoinbaseCredentials credentials, ICoinbaseRequest request)
+    public CoinbaseHttpRequest(string path, string method, CoinbaseCredentials credentials, object request)
     {
       this.Method = new HttpMethod(method);
       if (this.Method == HttpMethod.Post || this.Method == HttpMethod.Put)
       {
         this.body = JsonConvert.SerializeObject(request);
-        this.Uri = BuildUri(path);
+        this.Uri = this.BuildUri(path);
       }
       else
       {
-        this.body = "";
-        this.Uri = BuildUri(path, request);
+        this.body = string.Empty;
+        this.Uri = this.BuildUri(path, request);
       }
-      this.headers = BuildHeaders(path, method, credentials);
+
+      this.headers = this.BuildHeaders(path, method, credentials);
     }
 
     public Uri Uri { get; }
@@ -54,10 +55,12 @@ namespace Coinbase.Core.Http
 
     public string Content => this.body;
 
-    private Uri BuildUri(string baseUri, ICoinbaseRequest request = null)
+    private Uri BuildUri(string baseUri, object request = null)
     {
-      var uriBuilder = new UriBuilder(baseUri);
-      uriBuilder.Query = ToQueryString(request);
+      var uriBuilder = new UriBuilder(baseUri)
+      {
+        Query = this.ToQueryString(request),
+      };
 
       return uriBuilder.Uri;
     }
@@ -72,7 +75,7 @@ namespace Coinbase.Core.Http
       var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
 
       headers.Add("CB-ACCESS-KEY", credentials.AccessKey);
-      headers.Add("CB-ACCESS-SIGN", credentials.Sign(timestamp, method, path, body));
+      headers.Add("CB-ACCESS-SIGN", credentials.Sign(timestamp, method, path, this.body));
       headers.Add("CB-ACCESS-TIMESTAMP", timestamp);
       headers.Add("CB-ACCESS-PASSPHRASE", credentials.Passphrase);
 
@@ -83,7 +86,7 @@ namespace Coinbase.Core.Http
     {
       if (obj == null)
       {
-          return string.Empty;
+        return string.Empty;
       }
 
       var properties = obj.GetType().GetProperties();
@@ -91,24 +94,24 @@ namespace Coinbase.Core.Http
 
       foreach (var property in properties)
       {
-          var jsonProperty = property.GetCustomAttribute<JsonPropertyAttribute>();
-          var propertyName = jsonProperty?.PropertyName ?? property.Name;
-          var value = property.GetValue(obj);
+        var jsonProperty = property.GetCustomAttribute<JsonPropertyAttribute>();
+        var propertyName = jsonProperty?.PropertyName ?? property.Name;
+        var value = property.GetValue(obj);
 
-          if (value is IEnumerable enumerable && !(value is string))
+        if (value is IEnumerable enumerable && !(value is string))
+        {
+          foreach (var item in enumerable)
           {
-              foreach (var item in enumerable)
-              {
-                  keyValuePairs.Add($"{propertyName}={Uri.EscapeDataString(item.ToString())}");
-              }
-          }
-          else
-          {
-              keyValuePairs.Add($"{propertyName}={Uri.EscapeDataString(value?.ToString() ?? string.Empty)}");
+            keyValuePairs.Add($"{propertyName}={Uri.EscapeDataString(item.ToString())}");
           }
         }
+        else
+        {
+          keyValuePairs.Add($"{propertyName}={Uri.EscapeDataString(value?.ToString() ?? string.Empty)}");
+        }
+      }
 
-        return string.Join("&", keyValuePairs);
+      return string.Join("&", keyValuePairs);
     }
   }
- }
+}

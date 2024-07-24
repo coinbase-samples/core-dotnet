@@ -57,36 +57,28 @@ namespace Coinbase.Core.Service
       /// <typeparam name="T">Return type of the Request.</typeparam>
       /// <param name="method">HTTP Method for the Request.</param>
       /// <param name="path">API Path.</param>
+      /// <param name="request">Request Object.</param>
       /// <returns></returns>
       protected T Request<T>(
           HttpMethod method,
-          string path)
+          string path,
+          object request = null)
       {
-          return this.RequestAsync<T>(method, path)
+          return this.RequestAsync<T>(method, path, request)
               .ConfigureAwait(false).GetAwaiter().GetResult();
       }
 
       protected async Task<T> RequestAsync<T>(
           HttpMethod method,
           string path,
+          object request,
           CancellationToken cancellationToken = default)
       {
           return await this.Client.SendRequestAsync<T>(
               method,
               path,
+              request,
               cancellationToken).ConfigureAwait(false);
-      }
-
-      protected RequestOptions SetupRequestOptions(RequestOptions requestOptions)
-      {
-          if (requestOptions == null)
-          {
-              requestOptions = new RequestOptions();
-          }
-
-          requestOptions.BaseUrl = requestOptions.BaseUrl ?? this.BaseUrl;
-
-          return requestOptions;
       }
     }
 }

@@ -17,6 +17,7 @@
 namespace Coinbase.Core.Error
 {
   using System.Net;
+
   /// <summary>
   /// Exception thrown when an error occurs in the Coinbase API.
   /// </summary>

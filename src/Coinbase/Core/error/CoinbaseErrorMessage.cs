@@ -29,6 +29,5 @@ namespace Coinbase.Core.Error
     {
       get { return this.message; }
     }
-
   }
 }
