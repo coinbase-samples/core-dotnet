@@ -16,6 +16,7 @@
 
 namespace Coinbase.Core.Client
 {
+  using System.Net;
   using System.Net.Http;
   using System.Threading;
   using System.Threading.Tasks;
@@ -44,11 +45,13 @@ namespace Coinbase.Core.Client
     /// <param name="path">API Path.</param>
     /// <param name="request">Request parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="expectedStatusCode">Expected Status Code.</param>
     /// <returns>A task object representing the async operation.</returns>
     Task<T> SendRequestAsync<T>(
       HttpMethod method,
       string path,
       object request,
-      CancellationToken cancellationToken);
-    }
+      CancellationToken cancellationToken,
+      HttpStatusCode expectedStatusCode);
+  }
 }

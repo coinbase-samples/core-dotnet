@@ -16,6 +16,7 @@
 
 namespace Coinbase.Core.Service
 {
+  using System.Net;
   using System.Net.Http;
   using System.Threading;
   using System.Threading.Tasks;
@@ -26,7 +27,11 @@ namespace Coinbase.Core.Service
   /// </summary>
   public abstract class CoinbaseService
   {
-    private readonly ICoinbaseClient client;
+    private ICoinbaseClient client;
+
+    protected CoinbaseService()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CoinbaseService"/> class with a
@@ -41,6 +46,7 @@ namespace Coinbase.Core.Service
     public ICoinbaseClient Client
     {
       get => this.client;
+      set => this.client = value;
     }
 
     /// <summary>
@@ -49,14 +55,16 @@ namespace Coinbase.Core.Service
     /// <typeparam name="T">Return type of the Request.</typeparam>
     /// <param name="method">HTTP Method for the Request.</param>
     /// <param name="path">API Path.</param>
+    /// <param name="expectedStatusCode">Expected Status Code.</param>
     /// <param name="request">Request Object.</param>
     /// <returns></returns>
     protected T Request<T>(
         HttpMethod method,
         string path,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         object request = null)
     {
-      return this.RequestAsync<T>(method, path, request)
+      return this.RequestAsync<T>(method, path, request, default, expectedStatusCode)
           .ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
@@ -64,13 +72,15 @@ namespace Coinbase.Core.Service
         HttpMethod method,
         string path,
         object request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK)
     {
       return await this.Client.SendRequestAsync<T>(
           method,
           path,
           request,
-          cancellationToken).ConfigureAwait(false);
+          cancellationToken,
+          expectedStatusCode).ConfigureAwait(false);
     }
   }
 }

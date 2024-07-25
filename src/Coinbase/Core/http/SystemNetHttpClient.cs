@@ -11,7 +11,7 @@ namespace Coinbase.Core.Http
 
   /// <summary>
   /// Standard client to make requests to Coinbase's API, using
-  /// <see cref="System.Net.Http.HttpClient"/> to send HTTP requests. It can
+  /// <see cref="HttpClient"/> to send HTTP requests. It can
   /// automatically retry failed requests when it's safe to do so.
   /// </summary>
   public class SystemNetHttpClient : IHttpClient
@@ -19,10 +19,10 @@ namespace Coinbase.Core.Http
     /// <summary>Default maximum number of retries made by the client.</summary>
     public const int DefaultMaxNumberRetries = 2;
 
-    private static readonly Lazy<System.Net.Http.HttpClient> LazyDefaultHttpClient
-        = new Lazy<System.Net.Http.HttpClient>(BuildDefaultSystemNetHttpClient);
+    private static readonly Lazy<HttpClient> LazyDefaultHttpClient
+        = new Lazy<HttpClient>(BuildDefaultSystemNetHttpClient);
 
-    private readonly System.Net.Http.HttpClient httpClient;
+    private readonly HttpClient httpClient;
 
     private readonly object randLock = new object();
 
@@ -32,19 +32,28 @@ namespace Coinbase.Core.Http
     /// Initializes a new instance of the <see cref="SystemNetHttpClient"/> class.
     /// </summary>
     /// <param name="httpClient">
-    /// The <see cref="System.Net.Http.HttpClient"/> client to use. If <c>null</c>, an HTTP
+    /// The <see cref="HttpClient"/> client to use. If <c>null</c>, an HTTP
     /// client will be created with default parameters.
     /// </param>
     /// <param name="maxNetworkRetries">
     /// The maximum number of times the client will retry requests that fail due to an
     /// intermittent problem.
     /// </param>
+    /// <param name="timeout">
+    /// The timespan before the request times out.
+    /// </param>
     public SystemNetHttpClient(
-        System.Net.Http.HttpClient httpClient = null,
-        int maxNetworkRetries = DefaultMaxNumberRetries)
+        HttpClient httpClient = null,
+        int maxNetworkRetries = DefaultMaxNumberRetries,
+        TimeSpan? timeout = null)
     {
       this.httpClient = httpClient ?? LazyDefaultHttpClient.Value;
       this.MaxNetworkRetries = maxNetworkRetries;
+
+      if (timeout.HasValue)
+      {
+        this.httpClient.Timeout = timeout.Value;
+      }
     }
 
     /// <summary>Default timespan before the request times out.</summary>
@@ -201,6 +210,11 @@ namespace Coinbase.Core.Http
       foreach (var header in request.Headers)
       {
         requestMessage.Headers.Add(header.Key, header.Value);
+      }
+
+      if (request.Method == HttpMethod.Post || request.Method == HttpMethod.Put)
+      {
+        requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
       }
 
       // Request body

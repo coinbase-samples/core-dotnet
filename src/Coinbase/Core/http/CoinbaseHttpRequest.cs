@@ -21,7 +21,6 @@ namespace Coinbase.Core.Http
   using System.Collections.Generic;
   using System.Net.Http;
   using System.Reflection;
-  using Coinbase.Core.Client;
   using Coinbase.Core.Credentials;
   using Newtonsoft.Json;
 
@@ -44,7 +43,7 @@ namespace Coinbase.Core.Http
         this.Uri = this.BuildUri(path, request);
       }
 
-      this.headers = this.BuildHeaders(path, method, credentials);
+      this.headers = this.BuildHeaders(this.Uri.AbsolutePath, method, credentials);
     }
 
     public Uri Uri { get; }
@@ -57,7 +56,7 @@ namespace Coinbase.Core.Http
 
     private Uri BuildUri(string baseUri, object request = null)
     {
-      var uriBuilder = new UriBuilder(baseUri)
+      var uriBuilder = new UriBuilder($"https://{baseUri}")
       {
         Query = this.ToQueryString(request),
       };
@@ -68,16 +67,17 @@ namespace Coinbase.Core.Http
     private Dictionary<string, string> BuildHeaders(string path, string method, CoinbaseCredentials credentials)
     {
       var headers = new Dictionary<string, string>();
-      headers.Add("Content-Type", "application/json");
-      headers.Add("User-Agent", "Coinbase Pro .NET Client");
 
       // generate a timestamp and use that in both sign and the timestamp header
       var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
 
-      headers.Add("CB-ACCESS-KEY", credentials.AccessKey);
-      headers.Add("CB-ACCESS-SIGN", credentials.Sign(timestamp, method, path, this.body));
-      headers.Add("CB-ACCESS-TIMESTAMP", timestamp);
-      headers.Add("CB-ACCESS-PASSPHRASE", credentials.Passphrase);
+      // print the path before the headers
+      Console.WriteLine($"{method} {path}");
+
+      headers.Add("X-CB-ACCESS-KEY", credentials.AccessKey);
+      headers.Add("X-CB-ACCESS-SIGNATURE", credentials.Sign(timestamp, method, path, this.body));
+      headers.Add("X-CB-ACCESS-TIMESTAMP", timestamp);
+      headers.Add("X-CB-ACCESS-PASSPHRASE", credentials.Passphrase);
 
       return headers;
     }

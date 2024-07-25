@@ -17,6 +17,7 @@
 namespace Coinbase.Core.Client
 {
   using System;
+  using System.Net;
   using System.Net.Http;
   using System.Threading;
   using System.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace Coinbase.Core.Client
   /// <summary>
   /// Interface that represents a Coinbase API Client.
   /// </summary>
-  public class CoinbaseClient : ICoinbaseClient
+  public abstract class CoinbaseClient : ICoinbaseClient
   {
     private readonly IHttpClient httpClient;
 
@@ -46,12 +47,7 @@ namespace Coinbase.Core.Client
       string apiBasePath,
       IHttpClient httpClient = null)
     {
-      if (coinbaseCredentials == null)
-      {
-        throw new ArgumentException("Credentials cannot be null", nameof(coinbaseCredentials));
-      }
-
-      this.Credentials = coinbaseCredentials;
+      this.Credentials = coinbaseCredentials ?? throw new ArgumentException("Credentials cannot be null", nameof(coinbaseCredentials));
 
       if (string.IsNullOrWhiteSpace(apiBasePath.Trim()))
       {
@@ -72,15 +68,20 @@ namespace Coinbase.Core.Client
     public IHttpClient HttpClient { get; }
 
     /// <inheritdoc/>
-    public async Task<T> SendRequestAsync<T>(HttpMethod method, string requestUri, object options, CancellationToken cancellationToken)
+    public async Task<T> SendRequestAsync<T>(
+      HttpMethod method,
+      string path,
+      object options,
+      CancellationToken cancellationToken,
+      HttpStatusCode expectedStatusCode = HttpStatusCode.OK)
     {
-      CoinbaseHttpRequest request = new CoinbaseHttpRequest(requestUri, method.Method, this.Credentials, options);
+      CoinbaseHttpRequest request = new CoinbaseHttpRequest($"{this.ApiBasePath}{path}", method.Method, this.Credentials, options);
 
       // Send the HTTP request
       CoinbaseResponse response = await this.httpClient.SendAsyncRequest(request, cancellationToken);
 
       // If the response is successful return the content as type T
-      if (response.StatusCode != System.Net.HttpStatusCode.OK)
+      if (response.StatusCode != expectedStatusCode)
       {
         try
         {
