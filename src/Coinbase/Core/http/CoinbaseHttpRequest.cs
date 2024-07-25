@@ -71,9 +71,6 @@ namespace Coinbase.Core.Http
       // generate a timestamp and use that in both sign and the timestamp header
       var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
 
-      // print the path before the headers
-      Console.WriteLine($"{method} {path}");
-
       headers.Add("X-CB-ACCESS-KEY", credentials.AccessKey);
       headers.Add("X-CB-ACCESS-SIGNATURE", credentials.Sign(timestamp, method, path, this.body));
       headers.Add("X-CB-ACCESS-TIMESTAMP", timestamp);
