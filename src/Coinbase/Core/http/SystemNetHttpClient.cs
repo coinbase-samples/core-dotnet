@@ -230,12 +230,12 @@ namespace Coinbase.Core.Http
       }
 
       // Binary backoff and retry strategy
-      var delay = TimeSpan.FromTicks(MinNetworkRetriesDelay.Ticks * (1L << (numRetries - 1)));
+      var delay = TimeSpan.FromTicks(this.MinNetworkRetriesDelay.Ticks * (1L << (numRetries - 1)));
 
       // But never sleep less than the base sleep seconds.
-      if (delay < MinNetworkRetriesDelay)
+      if (delay < this.MinNetworkRetriesDelay)
       {
-        delay = MinNetworkRetriesDelay;
+        delay = this.MinNetworkRetriesDelay;
       }
 
       return delay;
