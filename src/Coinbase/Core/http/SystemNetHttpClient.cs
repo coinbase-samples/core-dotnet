@@ -1,9 +1,7 @@
 namespace Coinbase.Core.Http
 {
   using System;
-  using System.Diagnostics;
   using System.IO;
-  using System.Net;
   using System.Net.Http;
   using System.Net.Http.Headers;
   using System.Threading;
@@ -11,23 +9,15 @@ namespace Coinbase.Core.Http
 
   /// <summary>
   /// Standard client to make requests to Coinbase's API, using
-  /// <see cref="HttpClient"/> to send HTTP requests. It can
-  /// automatically retry failed requests when it's safe to do so.
-  /// This client is configured to use a Binary backoff and retry strategy.
+  /// <see cref="HttpClient"/> to send HTTP requests. This is a simple client
+  /// that does NOT include any retry logic.
   /// </summary>
   public class SystemNetHttpClient : IHttpClient
   {
-    /// <summary>Default maximum number of retries made by the client.</summary>
-    public const int DefaultMaxNumberRetries = 2;
-
     private static readonly Lazy<HttpClient> LazyDefaultHttpClient
         = new Lazy<HttpClient>(BuildDefaultSystemNetHttpClient);
 
     private readonly HttpClient httpClient;
-
-    private readonly object randLock = new object();
-
-    private readonly Random rand = new Random();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemNetHttpClient"/> class.
@@ -36,20 +26,14 @@ namespace Coinbase.Core.Http
     /// The <see cref="HttpClient"/> client to use. If <c>null</c>, an HTTP
     /// client will be created with default parameters.
     /// </param>
-    /// <param name="maxNetworkRetries">
-    /// The maximum number of times the client will retry requests that fail due to an
-    /// intermittent problem.
-    /// </param>
     /// <param name="timeout">
     /// The timespan before the request times out.
     /// </param>
     public SystemNetHttpClient(
         HttpClient httpClient = null,
-        int maxNetworkRetries = DefaultMaxNumberRetries,
         TimeSpan? timeout = null)
     {
       this.httpClient = httpClient ?? LazyDefaultHttpClient.Value;
-      this.MaxNetworkRetries = maxNetworkRetries;
 
       if (timeout.HasValue)
       {
@@ -59,28 +43,6 @@ namespace Coinbase.Core.Http
 
     /// <summary>Default timespan before the request times out.</summary>
     public static TimeSpan DefaultHttpTimeout => TimeSpan.FromSeconds(80);
-
-    /// <summary>
-    /// Maximum sleep time between tries to send HTTP requests after network failure.
-    /// </summary>
-    public static TimeSpan MaxNetworkRetriesDelay => TimeSpan.FromSeconds(5);
-
-    /// <summary>
-    /// Minimum sleep time between tries to send HTTP requests after network failure.
-    /// </summary>
-    public TimeSpan MinNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(1); // Default value
-
-    /// <summary>
-    /// Gets how many network retries were configured for this client.
-    /// </summary>
-    public int MaxNetworkRetries { get; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the client should sleep between automatic
-    /// request retries.
-    /// </summary>
-    /// <remarks>This is an internal property meant to be used in tests only.</remarks>
-    internal bool NetworkRetriesSleep { get; set; } = true;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpClient"/> class
@@ -103,7 +65,7 @@ namespace Coinbase.Core.Http
         CoinbaseHttpRequest request,
         CancellationToken cancellationToken = default)
     {
-      var (response, retries) = await this.SendHttpRequest(request, cancellationToken).ConfigureAwait(false);
+      var response = await this.SendHttpRequest(request, cancellationToken).ConfigureAwait(false);
 
       var reader = new StreamReader(
           await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
@@ -114,51 +76,29 @@ namespace Coinbase.Core.Http
           await reader.ReadToEndAsync().ConfigureAwait(false));
     }
 
-    private async Task<(HttpResponseMessage responseMessage, int retries)> SendHttpRequest(
+    private async Task<HttpResponseMessage> SendHttpRequest(
         CoinbaseHttpRequest request,
         CancellationToken cancellationToken)
     {
       Exception requestException;
       HttpResponseMessage response = null;
-      int retry = 0;
+      requestException = null;
 
-      while (true)
+      var httpRequest = this.BuildRequestMessage(request);
+
+      try
       {
-        requestException = null;
-
-        var httpRequest = this.BuildRequestMessage(request);
-
-        var stopwatch = Stopwatch.StartNew();
-
-        try
-        {
-          response = await this.httpClient.SendAsync(httpRequest, cancellationToken)
-              .ConfigureAwait(false);
-        }
-        catch (HttpRequestException exception)
-        {
-          requestException = exception;
-        }
-        catch (OperationCanceledException exception)
-            when (!cancellationToken.IsCancellationRequested)
-        {
-          requestException = exception;
-        }
-
-        stopwatch.Stop();
-
-        _ = stopwatch.Elapsed;
-
-        if (!this.ShouldRetry(
-            retry,
-            requestException != null,
-            response?.StatusCode))
-        {
-          break;
-        }
-
-        retry += 1;
-        await Task.Delay(this.SleepTime(retry), cancellationToken).ConfigureAwait(false);
+        response = await this.httpClient.SendAsync(httpRequest, cancellationToken)
+            .ConfigureAwait(false);
+      }
+      catch (HttpRequestException exception)
+      {
+        requestException = exception;
+      }
+      catch (OperationCanceledException exception)
+          when (!cancellationToken.IsCancellationRequested)
+      {
+        requestException = exception;
       }
 
       if (requestException != null)
@@ -166,39 +106,7 @@ namespace Coinbase.Core.Http
         throw requestException;
       }
 
-      return (response, retry);
-    }
-
-    public virtual bool ShouldRetry(
-        int numRetries,
-        bool error,
-        HttpStatusCode? statusCode)
-    {
-      // Do not retry if we are out of retries.
-      if (numRetries >= this.MaxNetworkRetries)
-      {
-        return false;
-      }
-
-      // Retry on connection error.
-      if (error == true)
-      {
-        return true;
-      }
-
-      // Retry on conflict errors.
-      if (statusCode == HttpStatusCode.Conflict)
-      {
-        return true;
-      }
-
-      // Retry on 500, 503, and other internal errors.
-      if (statusCode.HasValue && ((int)statusCode.Value >= 500))
-      {
-        return true;
-      }
-
-      return false;
+      return response;
     }
 
     private HttpRequestMessage BuildRequestMessage(CoinbaseHttpRequest request)
@@ -219,26 +127,6 @@ namespace Coinbase.Core.Http
       requestMessage.Content = new StringContent(request.Content);
 
       return requestMessage;
-    }
-
-    private TimeSpan SleepTime(int numRetries)
-    {
-      // We disable sleeping in some cases for tests.
-      if (!this.NetworkRetriesSleep)
-      {
-        return TimeSpan.Zero;
-      }
-
-      // Binary backoff and retry strategy
-      var delay = TimeSpan.FromTicks(this.MinNetworkRetriesDelay.Ticks * (1L << (numRetries - 1)));
-
-      // But never sleep less than the base sleep seconds.
-      if (delay < this.MinNetworkRetriesDelay)
-      {
-        delay = this.MinNetworkRetriesDelay;
-      }
-
-      return delay;
     }
   }
 }
