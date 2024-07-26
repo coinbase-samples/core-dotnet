@@ -21,6 +21,7 @@ namespace Coinbase.Core.Client
   using System.Threading;
   using System.Threading.Tasks;
   using Coinbase.Core.Credentials;
+  using Coinbase.Core.Http;
 
   /// <summary>
   /// Interface that represents a Coinbase API Client.
@@ -46,12 +47,14 @@ namespace Coinbase.Core.Client
     /// <param name="request">Request parameters.</param>
     /// <param name="expectedStatusCodes">Set of expected Status Code.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="callOptions"><see cref="CallOptions"/>.</param>
     /// <returns>A task object representing the async operation.</returns>
     Task<T> SendRequestAsync<T>(
       HttpMethod method,
       string path,
       object request,
       HttpStatusCode[] expectedStatusCodes,
-      CancellationToken cancellationToken);
+      CancellationToken cancellationToken,
+      CallOptions callOptions);
   }
 }

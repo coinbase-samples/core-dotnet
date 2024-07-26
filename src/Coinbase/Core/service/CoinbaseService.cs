@@ -21,6 +21,7 @@ namespace Coinbase.Core.Service
   using System.Threading;
   using System.Threading.Tasks;
   using Coinbase.Core.Client;
+  using Coinbase.Core.Http;
 
   /// <summary>
   /// Abstract class that represents any Coinbase API Service.
@@ -55,16 +56,18 @@ namespace Coinbase.Core.Service
     /// <typeparam name="T">Return type of the Request.</typeparam>
     /// <param name="method">HTTP Method for the Request.</param>
     /// <param name="path">API Path.</param>
-    /// <param name="request">Request Object.</param>
     /// <param name="expectedStatusCodes">Set of expected Status Code.</param>
+    /// <param name="request">Request Object.</param>
+    /// <param name="callOptions"><see cref="CallOptions"/>.</param>
     /// <returns></returns>
     protected T Request<T>(
         HttpMethod method,
         string path,
-        object request,
-        HttpStatusCode[] expectedStatusCodes)
+        HttpStatusCode[] expectedStatusCodes,
+        object request = null,
+        CallOptions callOptions = null)
     {
-      return this.RequestAsync<T>(method, path, request, expectedStatusCodes, default)
+      return this.RequestAsync<T>(method, path, request, expectedStatusCodes, default, callOptions)
           .ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
@@ -73,14 +76,16 @@ namespace Coinbase.Core.Service
         string path,
         object request,
         HttpStatusCode[] expectedStatusCodes,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        CallOptions callOptions = null)
     {
       return await this.Client.SendRequestAsync<T>(
           method,
           path,
           request,
           expectedStatusCodes,
-          cancellationToken).ConfigureAwait(false);
+          cancellationToken,
+          callOptions).ConfigureAwait(false);
     }
   }
 }

@@ -16,14 +16,16 @@
 
 namespace Coinbase.Core.Http
 {
-  using System.Threading;
-  using System.Threading.Tasks;
+  using System;
 
-  public interface IHttpClient
+  public class CallOptions
   {
-    Task<CoinbaseResponse> SendAsyncRequest(
-        CoinbaseHttpRequest request,
-        CallOptions callOptions,
-        CancellationToken cancellationToken);
+    public bool ShouldRetry { get; set; } = false; // Default retry
+
+    public int MaxRetries { get; set; } = 3; // Default max retries
+
+    public TimeSpan MinNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(1); // Default minimum delay
+
+    public TimeSpan MaxNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(30); // Default maximum delay
   }
 }

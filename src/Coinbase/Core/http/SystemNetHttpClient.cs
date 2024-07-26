@@ -59,21 +59,48 @@ namespace Coinbase.Core.Http
 
     /// <summary>Sends a request to Coinbase API as an asynchronous operation.</summary>
     /// <param name="request">The parameters of the request to send.</param>
+    /// <param name="callOptions">The configured <see cref="CallOptions"/>.</param>
     /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     public async Task<CoinbaseResponse> SendAsyncRequest(
         CoinbaseHttpRequest request,
+        CallOptions callOptions = null,
         CancellationToken cancellationToken = default)
     {
-      var response = await this.SendHttpRequest(request, cancellationToken).ConfigureAwait(false);
+      callOptions ??= new CallOptions();
+      int numRetries = 0;
 
-      var reader = new StreamReader(
-          await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
+      while (true)
+      {
+        try
+        {
+          var response = await this.SendHttpRequest(request, cancellationToken).ConfigureAwait(false);
 
-      return new CoinbaseResponse(
-          response.StatusCode,
-          response.Headers,
-          await reader.ReadToEndAsync().ConfigureAwait(false));
+          var reader = new StreamReader(
+              await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
+
+          return new CoinbaseResponse(
+              response.StatusCode,
+              response.Headers,
+              await reader.ReadToEndAsync().ConfigureAwait(false));
+        }
+        catch (Exception) when (callOptions.ShouldRetry && numRetries < callOptions.MaxRetries)
+        {
+          numRetries++;
+          var delay = TimeSpan.FromTicks(callOptions.MinNetworkRetriesDelay.Ticks * (1L << (numRetries - 1)));
+
+          if (delay < callOptions.MinNetworkRetriesDelay)
+          {
+            delay = callOptions.MinNetworkRetriesDelay;
+          }
+          else if (delay > callOptions.MaxNetworkRetriesDelay)
+          {
+            delay = callOptions.MaxNetworkRetriesDelay;
+          }
+
+          await Task.Delay(delay, cancellationToken);
+        }
+      }
     }
 
     private async Task<HttpResponseMessage> SendHttpRequest(
