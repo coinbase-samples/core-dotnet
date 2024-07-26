@@ -55,14 +55,14 @@ namespace Coinbase.Core.Service
     /// <typeparam name="T">Return type of the Request.</typeparam>
     /// <param name="method">HTTP Method for the Request.</param>
     /// <param name="path">API Path.</param>
-    /// <param name="expectedStatusCodes">Set of expected Status Code.</param>
     /// <param name="request">Request Object.</param>
+    /// <param name="expectedStatusCodes">Set of expected Status Code.</param>
     /// <returns></returns>
     protected T Request<T>(
         HttpMethod method,
         string path,
-        HttpStatusCode[] expectedStatusCodes,
-        object request = null)
+        object request,
+        HttpStatusCode[] expectedStatusCodes)
     {
       return this.RequestAsync<T>(method, path, request, expectedStatusCodes, default)
           .ConfigureAwait(false).GetAwaiter().GetResult();
@@ -79,8 +79,8 @@ namespace Coinbase.Core.Service
           method,
           path,
           request,
-          cancellationToken,
-          expectedStatusCodes).ConfigureAwait(false);
+          expectedStatusCodes,
+          cancellationToken).ConfigureAwait(false);
     }
   }
 }

@@ -73,8 +73,8 @@ namespace Coinbase.Core.Client
       HttpMethod method,
       string path,
       object options,
-      CancellationToken cancellationToken,
-      HttpStatusCode[] expectedStatusCodes)
+      HttpStatusCode[] expectedStatusCodes,
+      CancellationToken cancellationToken)
     {
       CoinbaseHttpRequest request = new CoinbaseHttpRequest($"{this.ApiBasePath}{path}", method.Method, this.Credentials, options);
 
