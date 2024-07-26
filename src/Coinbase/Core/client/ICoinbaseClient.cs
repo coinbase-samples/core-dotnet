@@ -45,13 +45,13 @@ namespace Coinbase.Core.Client
     /// <param name="path">API Path.</param>
     /// <param name="request">Request parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <param name="expectedStatusCode">Expected Status Code.</param>
+    /// <param name="expectedStatusCodes">Set of expected Status Code.</param>
     /// <returns>A task object representing the async operation.</returns>
     Task<T> SendRequestAsync<T>(
       HttpMethod method,
       string path,
       object request,
       CancellationToken cancellationToken,
-      HttpStatusCode expectedStatusCode);
+      HttpStatusCode[] expectedStatusCodes);
   }
 }

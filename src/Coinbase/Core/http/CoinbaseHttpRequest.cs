@@ -34,7 +34,7 @@ namespace Coinbase.Core.Http
       this.Method = new HttpMethod(method);
       if (this.Method == HttpMethod.Post || this.Method == HttpMethod.Put)
       {
-        this.body = JsonConvert.SerializeObject(request);
+        this.body = JsonConvert.SerializeObject(request, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
         this.Uri = this.BuildUri(path);
       }
       else

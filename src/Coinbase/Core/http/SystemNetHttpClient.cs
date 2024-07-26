@@ -82,13 +82,13 @@ namespace Coinbase.Core.Http
     internal bool NetworkRetriesSleep { get; set; } = true;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="System.Net.Http.HttpClient"/> class
+    /// Initializes a new instance of the <see cref="HttpClient"/> class
     /// with default parameters.
     /// </summary>
-    /// <returns>The new instance of the <see cref="System.Net.Http.HttpClient"/> class.</returns>
-    public static System.Net.Http.HttpClient BuildDefaultSystemNetHttpClient()
+    /// <returns>The new instance of the <see cref="HttpClient"/> class.</returns>
+    public static HttpClient BuildDefaultSystemNetHttpClient()
     {
-      return new System.Net.Http.HttpClient
+      return new HttpClient
       {
         Timeout = DefaultHttpTimeout,
       };
@@ -117,7 +117,6 @@ namespace Coinbase.Core.Http
         CoinbaseHttpRequest request,
         CancellationToken cancellationToken)
     {
-      TimeSpan duration;
       Exception requestException;
       HttpResponseMessage response = null;
       int retry = 0;
@@ -147,13 +146,12 @@ namespace Coinbase.Core.Http
 
         stopwatch.Stop();
 
-        duration = stopwatch.Elapsed;
+        _ = stopwatch.Elapsed;
 
         if (!this.ShouldRetry(
             retry,
             requestException != null,
-            response?.StatusCode,
-            response?.Headers))
+            response?.StatusCode))
         {
           break;
         }
@@ -173,8 +171,7 @@ namespace Coinbase.Core.Http
     private bool ShouldRetry(
         int numRetries,
         bool error,
-        HttpStatusCode? statusCode,
-        HttpHeaders headers)
+        HttpStatusCode? statusCode)
     {
       // Do not retry if we are out of retries.
       if (numRetries >= this.MaxNetworkRetries)
@@ -203,9 +200,9 @@ namespace Coinbase.Core.Http
       return false;
     }
 
-    private System.Net.Http.HttpRequestMessage BuildRequestMessage(CoinbaseHttpRequest request)
+    private HttpRequestMessage BuildRequestMessage(CoinbaseHttpRequest request)
     {
-      var requestMessage = new System.Net.Http.HttpRequestMessage(request.Method, request.Uri);
+      var requestMessage = new HttpRequestMessage(request.Method, request.Uri);
 
       foreach (var header in request.Headers)
       {

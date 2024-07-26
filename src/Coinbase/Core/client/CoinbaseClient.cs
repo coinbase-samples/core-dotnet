@@ -17,6 +17,7 @@
 namespace Coinbase.Core.Client
 {
   using System;
+  using System.Linq;
   using System.Net;
   using System.Net.Http;
   using System.Threading;
@@ -73,7 +74,7 @@ namespace Coinbase.Core.Client
       string path,
       object options,
       CancellationToken cancellationToken,
-      HttpStatusCode expectedStatusCode = HttpStatusCode.OK)
+      HttpStatusCode[] expectedStatusCodes)
     {
       CoinbaseHttpRequest request = new CoinbaseHttpRequest($"{this.ApiBasePath}{path}", method.Method, this.Credentials, options);
 
@@ -81,7 +82,7 @@ namespace Coinbase.Core.Client
       CoinbaseResponse response = await this.httpClient.SendAsyncRequest(request, cancellationToken);
 
       // If the response is successful return the content as type T
-      if (response.StatusCode != expectedStatusCode)
+      if (!expectedStatusCodes.Contains(response.StatusCode))
       {
         try
         {
