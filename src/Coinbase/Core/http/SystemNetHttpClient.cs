@@ -13,6 +13,7 @@ namespace Coinbase.Core.Http
   /// Standard client to make requests to Coinbase's API, using
   /// <see cref="HttpClient"/> to send HTTP requests. It can
   /// automatically retry failed requests when it's safe to do so.
+  /// This client is configured to use a Binary backoff and retry strategy.
   /// </summary>
   public class SystemNetHttpClient : IHttpClient
   {
@@ -67,7 +68,7 @@ namespace Coinbase.Core.Http
     /// <summary>
     /// Minimum sleep time between tries to send HTTP requests after network failure.
     /// </summary>
-    public static TimeSpan MinNetworkRetriesDelay => TimeSpan.FromMilliseconds(500);
+    public TimeSpan MinNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(1); // Default value
 
     /// <summary>
     /// Gets how many network retries were configured for this client.
@@ -157,7 +158,7 @@ namespace Coinbase.Core.Http
         }
 
         retry += 1;
-        await Task.Delay(this.SleepTime(retry)).ConfigureAwait(false);
+        await Task.Delay(this.SleepTime(retry), cancellationToken).ConfigureAwait(false);
       }
 
       if (requestException != null)
@@ -168,7 +169,7 @@ namespace Coinbase.Core.Http
       return (response, retry);
     }
 
-    private bool ShouldRetry(
+    public virtual bool ShouldRetry(
         int numRetries,
         bool error,
         HttpStatusCode? statusCode)
@@ -228,25 +229,8 @@ namespace Coinbase.Core.Http
         return TimeSpan.Zero;
       }
 
-      // Apply exponential backoff with MinNetworkRetriesDelay on the number of numRetries
-      // so far as inputs.
-      var delay = TimeSpan.FromTicks((long)(MinNetworkRetriesDelay.Ticks
-          * Math.Pow(2, numRetries - 1)));
-
-      // Do not allow the number to exceed MaxNetworkRetriesDelay
-      if (delay > MaxNetworkRetriesDelay)
-      {
-        delay = MaxNetworkRetriesDelay;
-      }
-
-      // Apply some jitter by randomizing the value in the range of 75%-100%.
-      var jitter = 1.0;
-      lock (this.randLock)
-      {
-        jitter = (3.0 + this.rand.NextDouble()) / 4.0;
-      }
-
-      delay = TimeSpan.FromTicks((long)(delay.Ticks * jitter));
+      // Binary backoff and retry strategy
+      var delay = TimeSpan.FromTicks(MinNetworkRetriesDelay.Ticks * (1L << (numRetries - 1)));
 
       // But never sleep less than the base sleep seconds.
       if (delay < MinNetworkRetriesDelay)
