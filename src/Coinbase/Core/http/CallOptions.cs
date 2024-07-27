@@ -17,15 +17,19 @@
 namespace Coinbase.Core.Http
 {
   using System;
+  using System.Collections.Generic;
+  using System.Net;
 
   public class CallOptions
   {
-    public bool ShouldRetry { get; set; } = false; // Default retry
+    public bool ShouldRetryOnStatusCodes { get; set; } = false; // Default retry
 
     public int MaxRetries { get; set; } = 3; // Default max retries
 
     public TimeSpan MinNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(1); // Default minimum delay
 
     public TimeSpan MaxNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(30); // Default maximum delay
+
+    public HashSet<HttpStatusCode> RetryableStatusCodes { get; set; } = new HashSet<HttpStatusCode> { }; // Default retryable status codes
   }
 }

@@ -1,7 +1,9 @@
 namespace Coinbase.Core.Http
 {
   using System;
+  using System.Collections.Generic;
   using System.IO;
+  using System.Net;
   using System.Net.Http;
   using System.Net.Http.Headers;
   using System.Threading;
@@ -67,65 +69,72 @@ namespace Coinbase.Core.Http
         CallOptions callOptions = null,
         CancellationToken cancellationToken = default)
     {
+      var response = await this.SendHttpRequest(request, cancellationToken).ConfigureAwait(false);
+
+      var reader = new StreamReader(
+          await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
+
+      return new CoinbaseResponse(
+          response.StatusCode,
+          response.Headers,
+          await reader.ReadToEndAsync().ConfigureAwait(false));
+    }
+
+    private async Task<HttpResponseMessage> SendHttpRequest(
+        CoinbaseHttpRequest request,
+        CancellationToken cancellationToken,
+        CallOptions callOptions = null)
+    {
+      Exception requestException;
+      HttpResponseMessage response = null;
+      requestException = null;
       callOptions ??= new CallOptions();
-      int numRetries = 0;
+      var retry = 0;
+
+      var httpRequest = this.BuildRequestMessage(request);
 
       while (true)
       {
         try
         {
-          var response = await this.SendHttpRequest(request, cancellationToken).ConfigureAwait(false);
-
-          var reader = new StreamReader(
-              await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
-
-          return new CoinbaseResponse(
-              response.StatusCode,
-              response.Headers,
-              await reader.ReadToEndAsync().ConfigureAwait(false));
+          response = await this.httpClient.SendAsync(httpRequest, cancellationToken)
+              .ConfigureAwait(false);
         }
-        catch (Exception) when (callOptions.ShouldRetry && numRetries < callOptions.MaxRetries)
+        catch (HttpRequestException exception)
         {
-          numRetries++;
-          var delay = TimeSpan.FromTicks(callOptions.MinNetworkRetriesDelay.Ticks * (1L << (numRetries - 1)));
-
-          if (delay < callOptions.MinNetworkRetriesDelay)
-          {
-            delay = callOptions.MinNetworkRetriesDelay;
-          }
-          else if (delay > callOptions.MaxNetworkRetriesDelay)
-          {
-            delay = callOptions.MaxNetworkRetriesDelay;
-          }
-
-          await Task.Delay(delay, cancellationToken);
+          requestException = exception;
         }
-      }
-    }
+        catch (OperationCanceledException exception)
+            when (!cancellationToken.IsCancellationRequested)
+        {
+          requestException = exception;
+        }
 
-    private async Task<HttpResponseMessage> SendHttpRequest(
-        CoinbaseHttpRequest request,
-        CancellationToken cancellationToken)
-    {
-      Exception requestException;
-      HttpResponseMessage response = null;
-      requestException = null;
+        if (!this.ShouldRetry(
+                    callOptions,
+                    retry,
+                    requestException != null,
+                    response?.StatusCode))
+        {
+          break;
+        }
 
-      var httpRequest = this.BuildRequestMessage(request);
+        retry += 1;
 
-      try
-      {
-        response = await this.httpClient.SendAsync(httpRequest, cancellationToken)
-            .ConfigureAwait(false);
-      }
-      catch (HttpRequestException exception)
-      {
-        requestException = exception;
-      }
-      catch (OperationCanceledException exception)
-          when (!cancellationToken.IsCancellationRequested)
-      {
-        requestException = exception;
+        // Calculate the exponential backoff delay
+        var delay = TimeSpan.FromTicks(callOptions.MinNetworkRetriesDelay.Ticks * (1L << (retry - 1)));
+
+        // Clamp the delay between the minimum and maximum delay values
+        if (delay < callOptions.MinNetworkRetriesDelay)
+        {
+          delay = callOptions.MinNetworkRetriesDelay;
+        }
+        else if (delay > callOptions.MaxNetworkRetriesDelay)
+        {
+          delay = callOptions.MaxNetworkRetriesDelay;
+        }
+
+        await Task.Delay(delay, cancellationToken);
       }
 
       if (requestException != null)
@@ -154,6 +163,35 @@ namespace Coinbase.Core.Http
       requestMessage.Content = new StringContent(request.Content);
 
       return requestMessage;
+    }
+
+    private bool ShouldRetry(
+        CallOptions callOptions,
+        int numRetries,
+        bool requestException,
+        HttpStatusCode? statusCode)
+    {
+      if (numRetries >= callOptions.MaxRetries)
+      {
+        return false;
+      }
+
+      if (requestException)
+      {
+        return true;
+      }
+
+      if (!callOptions.ShouldRetryOnStatusCodes)
+      {
+        return false;
+      }
+
+      if (statusCode.HasValue && callOptions.RetryableStatusCodes.Contains(statusCode.Value))
+      {
+        return true;
+      }
+
+      return false;
     }
   }
 }
