@@ -21,8 +21,9 @@ namespace Coinbase.Core.Http
   using System.Collections.Generic;
   using System.Net.Http;
   using System.Reflection;
+  using System.Text.Json;
+  using System.Text.Json.Serialization;
   using Coinbase.Core.Credentials;
-  using Newtonsoft.Json;
 
   public class CoinbaseHttpRequest
   {
@@ -34,7 +35,14 @@ namespace Coinbase.Core.Http
       this.Method = new HttpMethod(method);
       if (this.Method == HttpMethod.Post || this.Method == HttpMethod.Put)
       {
-        this.body = JsonConvert.SerializeObject(request, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+        this.body = JsonSerializer.Serialize(
+          request,
+          new JsonSerializerOptions
+          {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new JsonStringEnumConverter() },
+          });
+        Console.WriteLine(this.body);
         this.Uri = this.BuildUri(path);
       }
       else
@@ -91,15 +99,15 @@ namespace Coinbase.Core.Http
 
       foreach (var property in properties)
       {
-        var jsonProperty = property.GetCustomAttribute<JsonPropertyAttribute>();
-        var propertyName = jsonProperty?.PropertyName ?? property.Name;
+        var jsonProperty = property.GetCustomAttribute<JsonPropertyNameAttribute>();
+        var propertyName = jsonProperty?.Name ?? property.Name;
         var value = property.GetValue(obj);
 
         if (value is IEnumerable enumerable && !(value is string))
         {
           foreach (var item in enumerable)
           {
-            keyValuePairs.Add($"{propertyName}={Uri.EscapeDataString(item.ToString())}");
+            keyValuePairs.Add($"{propertyName}={Uri.EscapeDataString(item?.ToString() ?? string.Empty)}");
           }
         }
         else

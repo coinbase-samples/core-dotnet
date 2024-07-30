@@ -18,16 +18,11 @@ namespace Coinbase.Core.Error
 {
   public class CoinbaseErrorMessage
   {
-    private string message;
-
     public CoinbaseErrorMessage(string message)
     {
-      this.message = message;
+      this.Message = message;
     }
 
-    public string Message
-    {
-      get { return this.message; }
-    }
+    public string Message { get; set; }
   }
 }

@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Description>Coinbase.net is a sync/async .NET 4.6.1+ client, and a portable class library for Coinbase APIs.</Description>
     <Version>0.0.1</Version>
-    <LangVersion>8</LangVersion>
+    <LangVersion>11</LangVersion>
     <Authors>Coinbase Solutions Architecture</Authors>
-    <TargetFrameworks>net5.0;net6.0;netcoreapp3.1;netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <PackageTags>coinbase</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/coinbase-samples/core-dotnet</PackageProjectUrl>

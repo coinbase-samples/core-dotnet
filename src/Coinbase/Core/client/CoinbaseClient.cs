@@ -20,12 +20,13 @@ namespace Coinbase.Core.Client
   using System.Linq;
   using System.Net;
   using System.Net.Http;
+  using System.Text.Json;
   using System.Threading;
   using System.Threading.Tasks;
+  using Coinbase.Core.Common;
   using Coinbase.Core.Credentials;
   using Coinbase.Core.Error;
   using Coinbase.Core.Http;
-  using Newtonsoft.Json;
 
   /// <summary>
   /// Interface that represents a Coinbase API Client.
@@ -87,16 +88,16 @@ namespace Coinbase.Core.Client
       {
         try
         {
-          var error = JsonConvert.DeserializeObject<CoinbaseErrorMessage>(response.Content);
+          var error = JsonSerializer.Deserialize<CoinbaseErrorMessage>(response.Content, Settings.BaseJsonSerializerOptions);
           throw new CoinbaseClientException(error.Message);
         }
-        catch (JsonReaderException)
+        catch (Exception)
         {
           throw new CoinbaseException(response.Content);
         }
       }
 
-      return JsonConvert.DeserializeObject<T>(response.Content);
+      return JsonSerializer.Deserialize<T>(response.Content, Settings.BaseJsonSerializerOptions);
     }
   }
 }

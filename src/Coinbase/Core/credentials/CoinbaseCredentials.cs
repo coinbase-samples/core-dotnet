@@ -20,42 +20,12 @@ namespace Coinbase.Core.Credentials
   using System.Security.Cryptography;
   using System.Text;
   using Coinbase.Core.Error;
-  using Newtonsoft.Json;
 
   /// <summary>
   /// Class that represents the credentials used to authenticate with the Coinbase API.
   /// </summary>
   public class CoinbaseCredentials
   {
-    [JsonProperty(Required = Required.Always)]
-    private string accessKey;
-    [JsonProperty(Required = Required.Always)]
-    private string passphrase;
-    [JsonProperty(Required = Required.Always)]
-    private string signingKey;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CoinbaseCredentials"/> class.
-    /// </summary>
-    /// <param name="credentialsJson">Json blob with credentials payload.</param>
-    /// <exception cref="CoinbaseClientException">
-    /// if <c>credentialsJson</c> is not a valid JSON object.
-    /// </exception>
-    public CoinbaseCredentials(string credentialsJson)
-    {
-      try
-      {
-        var credentials = JsonConvert.DeserializeObject<CoinbaseCredentials>(credentialsJson);
-        this.accessKey = credentials.AccessKey;
-        this.passphrase = credentials.Passphrase;
-        this.signingKey = credentials.SigningKey;
-      }
-      catch (Exception e)
-      {
-        throw new CoinbaseClientException("Failed to parse credentials", e);
-      }
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="CoinbaseCredentials"/> class.
     /// </summary>
@@ -67,26 +37,26 @@ namespace Coinbase.Core.Credentials
       string passphrase = null,
       string signingKey = null)
     {
-      if (string.IsNullOrEmpty(accessKey.Trim()))
+      if (string.IsNullOrWhiteSpace(accessKey.Trim()))
       {
         throw new CoinbaseClientException("Access key is required");
       }
 
-      this.accessKey = accessKey;
+      this.AccessKey = accessKey;
 
-      if (string.IsNullOrEmpty(passphrase.Trim()))
+      if (string.IsNullOrWhiteSpace(passphrase.Trim()))
       {
         throw new CoinbaseClientException("Passphrase is required");
       }
 
-      this.passphrase = passphrase;
+      this.Passphrase = passphrase;
 
-      if (string.IsNullOrEmpty(signingKey))
+      if (string.IsNullOrWhiteSpace(signingKey))
       {
         throw new CoinbaseClientException("Signing key is required");
       }
 
-      this.signingKey = signingKey;
+      this.SigningKey = signingKey;
     }
 
     /// <summary>
@@ -96,23 +66,11 @@ namespace Coinbase.Core.Credentials
     {
     }
 
-    public string AccessKey
-    {
-      get { return this.accessKey; }
-      set { this.accessKey = value; }
-    }
+    required public string AccessKey { get; set; }
 
-    public string Passphrase
-    {
-      get { return this.passphrase; }
-      set { this.passphrase = value; }
-    }
+    required public string Passphrase { get; set; }
 
-    public string SigningKey
-    {
-      get { return this.signingKey; }
-      set { this.signingKey = value; }
-    }
+    required public string SigningKey { get; set; }
 
     public string Sign(string timestamp, string method, string path, string body)
     {
@@ -123,11 +81,11 @@ namespace Coinbase.Core.Credentials
         byte[] hmacKey;
         try
         {
-          hmacKey = Convert.FromBase64String(this.signingKey);
+          hmacKey = Convert.FromBase64String(this.SigningKey);
         }
         catch (FormatException)
         {
-          hmacKey = Encoding.UTF8.GetBytes(this.signingKey);
+          hmacKey = Encoding.UTF8.GetBytes(this.SigningKey);
         }
 
         using var hmac = new HMACSHA256(hmacKey);

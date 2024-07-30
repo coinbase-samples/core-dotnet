@@ -169,13 +169,13 @@ namespace Coinbase.Core.Http
         requestMessage.Headers.Add(header.Key, header.Value);
       }
 
+      // Request body
+      requestMessage.Content = new StringContent(request.Content);
+
       if (request.Method == HttpMethod.Post || request.Method == HttpMethod.Put)
       {
         requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
       }
-
-      // Request body
-      requestMessage.Content = new StringContent(request.Content);
 
       return requestMessage;
     }
