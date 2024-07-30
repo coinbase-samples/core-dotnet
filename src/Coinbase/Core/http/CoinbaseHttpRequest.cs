@@ -21,9 +21,9 @@ namespace Coinbase.Core.Http
   using System.Collections.Generic;
   using System.Net.Http;
   using System.Reflection;
-  using System.Text.Json;
   using System.Text.Json.Serialization;
   using Coinbase.Core.Credentials;
+  using Coinbase.Core.Serialization;
 
   public class CoinbaseHttpRequest
   {

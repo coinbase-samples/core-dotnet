@@ -19,6 +19,7 @@ namespace Coinbase.Core.Serialization
   public interface IJsonUtility
   {
     string Serialize(object obj);
+
     T Deserialize<T>(string json);
   }
 }

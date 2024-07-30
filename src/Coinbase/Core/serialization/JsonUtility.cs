@@ -17,6 +17,7 @@
 namespace Coinbase.Core.Serialization
 {
   using System.Text.Json;
+  using System.Text.Json.Serialization;
 
   public class JsonUtility : IJsonUtility
   {
@@ -37,12 +38,12 @@ namespace Coinbase.Core.Serialization
 
     public string Serialize(object obj)
     {
-      return JsonSerializer.Serialize(obj, options);
+      return JsonSerializer.Serialize(obj, this.options);
     }
 
     public T Deserialize<T>(string json)
     {
-      return JsonSerializer.Deserialize<T>(json, options);
+      return JsonSerializer.Deserialize<T>(json, this.options);
     }
   }
 }
