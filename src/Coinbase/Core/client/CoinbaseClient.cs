@@ -20,13 +20,12 @@ namespace Coinbase.Core.Client
   using System.Linq;
   using System.Net;
   using System.Net.Http;
-  using System.Text.Json;
   using System.Threading;
   using System.Threading.Tasks;
-  using Coinbase.Core.Common;
   using Coinbase.Core.Credentials;
   using Coinbase.Core.Error;
   using Coinbase.Core.Http;
+  using Coinbase.Core.Serialization;
 
   /// <summary>
   /// Interface that represents a Coinbase API Client.
@@ -39,9 +38,10 @@ namespace Coinbase.Core.Client
     /// <summary>
     /// Initializes a new instance of the <see cref="CoinbaseClient"/> class.
     /// </summary>
-    /// <param name="httpClient">Http Client, will default to <see cref="SystemNetHttpClient"/>.</param>
     /// <param name="coinbaseCredentials">Api Credentials.</param>
     /// <param name="apiBasePath">Base url path for the API.</param>
+    /// <param name="jsonUtility">A Utility to modify how Json is serialized/deserialized.</param>
+    /// <param name="httpClient">Http Client, will default to <see cref="SystemNetHttpClient"/>.</param>
     /// <exception cref="ArgumentException">
     /// Thrown if the Credentials are not valid or a base path is not provided.
     /// </exception>
