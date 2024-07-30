@@ -61,7 +61,7 @@ namespace Coinbase.Core.Http
     }
 
     /// <summary>Default timespan before the request times out.</summary>
-    public static TimeSpan DefaultHttpTimeout => TimeSpan.FromSeconds(80);
+    public static TimeSpan DefaultHttpTimeout => TimeSpan.FromSeconds(15);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpClient"/> class

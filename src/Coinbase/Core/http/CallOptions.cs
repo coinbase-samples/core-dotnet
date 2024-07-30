@@ -20,16 +20,37 @@ namespace Coinbase.Core.Http
   using System.Collections.Generic;
   using System.Net;
 
+  /// <summary>
+  /// Options for the HttpClient to use when making requests. Most of the options
+  /// are related to retry logic.
+  /// </summary>
   public class CallOptions
   {
+    /// <summary>
+    /// Defaults to false. If true the client will retry on any status code
+    /// provided in <see cref="RetryableStatusCodes"/>.
+    /// </summary>
     public bool ShouldRetryOnStatusCodes { get; set; } = false; // Default retry
 
+    /// <summary>
+    /// Defaults to 3. The maximum number of retries.
+    /// </summary>
     public int MaxRetries { get; set; } = 3; // Default max retries
 
-    public TimeSpan MinNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(1); // Default minimum delay
+    /// <summary>
+    /// Defaults to 500 milliseconds. The minimum delay between calls.
+    /// </summary>
+    public TimeSpan MinNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(0.5); // Default minimum delay
 
-    public TimeSpan MaxNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(30); // Default maximum delay
+    /// <summary>
+    /// Defaults to 1 second. The maximum delay between calls.
+    /// </summary>
+    public TimeSpan MaxNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(1); // Default maximum delay
 
+    /// <summary>
+    /// Defaults to an empty set. The status codes to retry on when
+    /// <see cref="ShouldRetryOnStatusCodes"/> is true.
+    /// </summary>
     public HashSet<HttpStatusCode> RetryableStatusCodes { get; set; } = new HashSet<HttpStatusCode> { }; // Default retryable status codes
   }
 }
