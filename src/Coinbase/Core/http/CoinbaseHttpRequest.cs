@@ -30,19 +30,17 @@ namespace Coinbase.Core.Http
     private readonly string body;
     private Dictionary<string, string> headers;
 
-    public CoinbaseHttpRequest(string path, string method, CoinbaseCredentials credentials, object request)
+    public CoinbaseHttpRequest(
+      string path,
+      string method,
+      CoinbaseCredentials credentials,
+      object request,
+      IJsonUtility jsonUtility = null)
     {
       this.Method = new HttpMethod(method);
       if (this.Method == HttpMethod.Post || this.Method == HttpMethod.Put)
       {
-        this.body = JsonSerializer.Serialize(
-          request,
-          new JsonSerializerOptions
-          {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonStringEnumConverter() },
-          });
-        Console.WriteLine(this.body);
+        this.body = jsonUtility.Serialize(request);
         this.Uri = this.BuildUri(path);
       }
       else

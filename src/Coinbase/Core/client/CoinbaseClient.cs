@@ -34,6 +34,7 @@ namespace Coinbase.Core.Client
   public abstract class CoinbaseClient : ICoinbaseClient
   {
     private readonly IHttpClient httpClient;
+    private readonly IJsonUtility jsonUtility;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CoinbaseClient"/> class.
@@ -47,6 +48,7 @@ namespace Coinbase.Core.Client
     public CoinbaseClient(
       CoinbaseCredentials coinbaseCredentials,
       string apiBasePath,
+      IJsonUtility jsonUtility = null,
       IHttpClient httpClient = null)
     {
       this.Credentials = coinbaseCredentials ?? throw new ArgumentException("Credentials cannot be null", nameof(coinbaseCredentials));
@@ -59,6 +61,7 @@ namespace Coinbase.Core.Client
       this.ApiBasePath = apiBasePath;
 
       this.httpClient = httpClient ?? new SystemNetHttpClient();
+      this.jsonUtility = jsonUtility ?? new JsonUtility();
     }
 
     /// <inheritdoc/>
@@ -88,7 +91,7 @@ namespace Coinbase.Core.Client
       {
         try
         {
-          var error = JsonSerializer.Deserialize<CoinbaseErrorMessage>(response.Content, Settings.BaseJsonSerializerOptions);
+          var error = this.jsonUtility.Deserialize<CoinbaseErrorMessage>(response.Content);
           throw new CoinbaseClientException(error.Message);
         }
         catch (Exception)
@@ -97,7 +100,7 @@ namespace Coinbase.Core.Client
         }
       }
 
-      return JsonSerializer.Deserialize<T>(response.Content, Settings.BaseJsonSerializerOptions);
+      return this.jsonUtility.Deserialize<T>(response.Content);
     }
   }
 }

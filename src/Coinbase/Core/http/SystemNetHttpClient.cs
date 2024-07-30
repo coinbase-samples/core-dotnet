@@ -21,6 +21,8 @@ namespace Coinbase.Core.Http
   using System.Net;
   using System.Net.Http;
   using System.Net.Http.Headers;
+  using System.Text;
+  using System.Text.Json;
   using System.Threading;
   using System.Threading.Tasks;
 
@@ -169,12 +171,9 @@ namespace Coinbase.Core.Http
         requestMessage.Headers.Add(header.Key, header.Value);
       }
 
-      // Request body
-      requestMessage.Content = new StringContent(request.Content);
-
       if (request.Method == HttpMethod.Post || request.Method == HttpMethod.Put)
       {
-        requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        requestMessage.Content = new StringContent(request.Content, Encoding.UTF8, "application/json");
       }
 
       return requestMessage;
