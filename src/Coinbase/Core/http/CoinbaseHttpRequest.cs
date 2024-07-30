@@ -35,7 +35,7 @@ namespace Coinbase.Core.Http
       string method,
       CoinbaseCredentials credentials,
       object request,
-      IJsonUtility jsonUtility = null)
+      IJsonUtility jsonUtility)
     {
       this.Method = new HttpMethod(method);
       if (this.Method == HttpMethod.Post || this.Method == HttpMethod.Put)

@@ -81,7 +81,12 @@ namespace Coinbase.Core.Client
       CancellationToken cancellationToken,
       CallOptions callOptions = null)
     {
-      CoinbaseHttpRequest request = new CoinbaseHttpRequest($"{this.ApiBasePath}{path}", method.Method, this.Credentials, options);
+      CoinbaseHttpRequest request = new CoinbaseHttpRequest(
+        $"{this.ApiBasePath}{path}",
+        method.Method,
+        this.Credentials,
+        options,
+        this.jsonUtility);
 
       // Send the HTTP request
       CoinbaseResponse response = await this.httpClient.SendAsyncRequest(request, callOptions, cancellationToken);
