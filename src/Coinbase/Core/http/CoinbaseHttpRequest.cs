@@ -22,6 +22,7 @@ namespace Coinbase.Core.Http
   using System.Net.Http;
   using System.Text.Json;
   using Coinbase.Core.Credentials;
+  using Coinbase.Core.Error;
   using Coinbase.Core.Serialization;
 
   public class CoinbaseHttpRequest
@@ -30,6 +31,15 @@ namespace Coinbase.Core.Http
     private readonly IJsonUtility jsonUtility;
     private Dictionary<string, string> headers;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CoinbaseHttpRequest"/> class.
+    /// </summary>
+    /// <param name="path">Path for the request.</param>
+    /// <param name="method">HttpMethod for the request.</param>
+    /// <param name="credentials">Instance of <see cref="CoinbaseCredentials"/>.</param>
+    /// <param name="request">RequestOptions Object.</param>
+    /// <param name="jsonUtility">Instance of <see cref="IJsonUtility"/>.</param>
+    /// <exception cref="CoinbaseClientException">If unexpected HttpMethod provided.</exception>
     public CoinbaseHttpRequest(
       string path,
       string method,
@@ -39,15 +49,19 @@ namespace Coinbase.Core.Http
     {
       this.jsonUtility = jsonUtility;
       this.Method = new HttpMethod(method);
-      if (this.Method == HttpMethod.Post || this.Method == HttpMethod.Put)
+      if (this.Method == HttpMethod.Post || this.Method == HttpMethod.Put || this.Method == HttpMethod.Patch)
       {
         this.body = jsonUtility.Serialize(request);
         this.Uri = this.BuildUri(path);
       }
-      else
+      else if (this.Method == HttpMethod.Get || this.Method == HttpMethod.Delete)
       {
         this.body = string.Empty;
         this.Uri = this.BuildUri(path, request);
+      }
+      else
+      {
+        throw new CoinbaseClientException("Unsupported HTTP Method: " + this.Method);
       }
 
       this.headers = this.BuildHeaders(this.Uri.AbsolutePath, method, credentials);
