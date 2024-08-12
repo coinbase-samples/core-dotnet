@@ -16,18 +16,8 @@
 
 namespace Coinbase.Core.Error
 {
-  public class CoinbaseErrorMessage : ICoinbaseErrorMessage
+  public interface ICoinbaseErrorMessage
   {
-    public CoinbaseErrorMessage(string message)
-    {
-      this.Message = message;
-    }
-
-    public string Message { get; set; }
-
-    public CoinbaseException CreateCoinbaseException()
-    {
-      return new CoinbaseException(this.Message);
-    }
+    public CoinbaseException CreateCoinbaseException();
   }
 }

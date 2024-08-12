@@ -70,16 +70,20 @@ namespace Coinbase.Core.Client
     /// <inheritdoc/>
     public CoinbaseCredentials Credentials { get; }
 
-    public IHttpClient HttpClient { get; }
+    public IHttpClient HttpClient { get => this.httpClient; }
+
+    public IJsonUtility JsonUtility { get => this.jsonUtility; }
 
     /// <inheritdoc/>
-    public async Task<T> SendRequestAsync<T>(
+    public virtual async Task<T> SendRequestAsync<T>(
       HttpMethod method,
       string path,
       object options,
       HttpStatusCode[] expectedStatusCodes,
       CancellationToken cancellationToken,
-      CallOptions callOptions = null)
+#nullable enable
+      CallOptions? callOptions = null)
+#nullable disable
     {
       CoinbaseHttpRequest request = new CoinbaseHttpRequest(
         $"{this.ApiBasePath}{path}",
@@ -102,17 +106,7 @@ namespace Coinbase.Core.Client
       // If the response is successful return the content as type T
       if (!expectedStatusCodes.Contains(response.StatusCode))
       {
-        CoinbaseErrorMessage error;
-        try
-        {
-          error = this.jsonUtility.Deserialize<CoinbaseErrorMessage>(response.Content);
-        }
-        catch (Exception)
-        {
-          throw new CoinbaseException(response.Content);
-        }
-
-        throw new CoinbaseClientException(error.Message);
+        throw new CoinbaseException(response.StatusCode, response.Content);
       }
 
       return this.jsonUtility.Deserialize<T>(response.Content);

@@ -55,6 +55,8 @@ namespace Coinbase.Core.Client
       object request,
       HttpStatusCode[] expectedStatusCodes,
       CancellationToken cancellationToken,
-      CallOptions callOptions);
+#nullable enable
+      CallOptions? callOptions);
+#nullable disable
   }
 }

@@ -16,38 +16,19 @@
 
 namespace Coinbase.Core.Serialization
 {
+  using System;
   using System.Text.Json;
   using System.Text.Json.Serialization;
-
-  public class JsonUtility : IJsonUtility
+  public class UtcIso8601DateTimeOffsetConverter : JsonConverter<DateTimeOffset>
   {
-    private readonly JsonSerializerOptions options;
-
-    public JsonUtility()
+    public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-      this.options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-      {
-        Converters = {
-          new JsonStringEnumConverter(),
-          new UtcIso8601DateTimeOffsetConverter(),
-        },
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-      };
+      return DateTimeOffset.Parse(reader.GetString());
     }
 
-    public JsonUtility(JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
     {
-      this.options = options;
-    }
-
-    public string Serialize(object obj)
-    {
-      return JsonSerializer.Serialize(obj, this.options);
-    }
-
-    public T Deserialize<T>(string json)
-    {
-      return JsonSerializer.Deserialize<T>(json, this.options);
+      writer.WriteStringValue(value.UtcDateTime.ToString("o"));
     }
   }
 }
