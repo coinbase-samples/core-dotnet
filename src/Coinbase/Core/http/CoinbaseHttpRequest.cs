@@ -71,7 +71,7 @@ namespace Coinbase.Core.Http
       return uriBuilder.Uri;
     }
 
-    private Dictionary<string, string> BuildHeaders(string path, string method, CoinbaseCredentials credentials)
+    protected virtual Dictionary<string, string> BuildHeaders(string path, string method, CoinbaseCredentials credentials)
     {
       var headers = new Dictionary<string, string>();
 
