@@ -19,6 +19,7 @@ namespace Coinbase.Core.Serialization
   using System;
   using System.Text.Json;
   using System.Text.Json.Serialization;
+
   public class UtcIso8601DateTimeOffsetConverter : JsonConverter<DateTimeOffset>
   {
     public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

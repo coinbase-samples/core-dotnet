@@ -27,7 +27,8 @@ namespace Coinbase.Core.Serialization
     {
       this.options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
       {
-        Converters = {
+        Converters =
+        {
           new JsonStringEnumConverter(),
           new UtcIso8601DateTimeOffsetConverter(),
         },
