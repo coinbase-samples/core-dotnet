@@ -11,7 +11,13 @@ It supports .NET Standard 2.0+, .NET Core 2.0+, and .NET Framework 5+.
 The _Coinbase .NET Core_ is vended through [NuGet](https://www.nuget.org/packages/CoinbaseSdk.Core/) and available for installation via the `dotnet` CLI.
 
 ```bash
-dotnet add package CoinbaseSdk.Core
+dotnet add package CoinbaseSdk.Core --version x.y.z
+```
+
+or if using [paket](https://fsprojects.github.io/Paket/):
+
+```bash
+paket add CoinbaseSdk.Core --version x.y.z
 ```
 
 ## License
