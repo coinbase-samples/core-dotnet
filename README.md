@@ -1,27 +1,29 @@
-# Coinbase .NET Core
+# Coinbase .NET Core Library
 
 ## Overview
 
-_Coinbase .NET Core_ is a library that is used by other .NET samples
+The **Coinbase .NET Core Library** (`CoinbaseSdk.Core`) is a shared foundational library designed to power Coinbase .NET SDKs. It provides essential, common functionality required for building robust and consistent API clients.
 
-It supports .NET Standard 2.0+, .NET Core 2.0+, and .NET Framework 5+.
+This library is intended for internal use by Coinbase SDKs and advanced users building custom integrations who need a standardized base.
+
+## Key Features
+
+*   **Base Client Architecture**: Provides an abstract `CoinbaseClient` to handle the lifecycle of API requests.
+*   **HTTP Communication**: Encapsulates `HttpClient` usage with standardized request/response handling.
+*   **Serialization**: Includes `JsonUtility` wrapping `System.Text.Json` with custom converters for:
+    *   Resilient Enum handling (`NullOnUnknownEnumConverter`).
+    *   Standardized Date/Time formatting (`UtcIso8601DateTimeOffsetConverter`).
+*   **Error Handling**: Defines a hierarchy of exceptions (`CoinbaseException`, `CoinbaseClientException`) for consistent error reporting.
+*   **Authentication**: Structured credential management for API access.
 
 ## Installation
 
-The _Coinbase .NET Core_ is vended through [NuGet](https://www.nuget.org/packages/CoinbaseSdk.Core/) and available for installation via the `dotnet` CLI.
+The library is available on NuGet:
 
 ```bash
-dotnet add package CoinbaseSdk.Core --version x.y.z
-```
-
-or if using [paket](https://fsprojects.github.io/Paket/):
-
-```bash
-paket add CoinbaseSdk.Core --version x.y.z
+dotnet add package CoinbaseSdk.Core
 ```
 
 ## License
 
-The _Coinbase .NET Core_ sample library is free and open source and released under the [Apache License, Version 2.0](LICENSE).
-
-The application and code are only available for demonstration purposes.
+This project is licensed under the [Apache License, Version 2.0](LICENSE).

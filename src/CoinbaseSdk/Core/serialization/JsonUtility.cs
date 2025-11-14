@@ -18,6 +18,7 @@ namespace CoinbaseSdk.Core.Serialization
 {
   using System.Text.Json;
   using System.Text.Json.Serialization;
+  using System.Text.Json.Serialization.Metadata;
 
   public class JsonUtility : IJsonUtility
   {
@@ -29,10 +30,12 @@ namespace CoinbaseSdk.Core.Serialization
       {
         Converters =
         {
+          new NullOnUnknownEnumConverter(),
           new JsonStringEnumConverter(),
           new UtcIso8601DateTimeOffsetConverter(),
         },
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
       };
     }
 

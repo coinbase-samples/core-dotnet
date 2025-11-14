@@ -32,19 +32,20 @@ namespace CoinbaseSdk.Core.Credentials
     /// <param name="accessKey">Coinbase API AccessKey.</param>
     /// <param name="passphrase">Coinbase API Secret Key.</param>
     /// <param name="signingKey">Coinbase API Signing Key.</param>
+    [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
     public CoinbaseCredentials(
       string accessKey = null,
       string passphrase = null,
       string signingKey = null)
     {
-      if (string.IsNullOrWhiteSpace(accessKey.Trim()))
+      if (string.IsNullOrWhiteSpace(accessKey))
       {
         throw new CoinbaseClientException("Access key is required");
       }
 
       this.AccessKey = accessKey;
 
-      if (string.IsNullOrWhiteSpace(passphrase.Trim()))
+      if (string.IsNullOrWhiteSpace(passphrase))
       {
         throw new CoinbaseClientException("Passphrase is required");
       }
