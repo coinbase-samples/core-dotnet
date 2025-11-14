@@ -40,5 +40,78 @@ namespace CoinbaseSdk.Core.Serialization
       var converterType = typeof(NullOnUnknownEnumConverterGeneric<>).MakeGenericType(enumType);
       return (JsonConverter)Activator.CreateInstance(converterType);
     }
+
+    /// <summary>
+    /// Generic JSON converter that converts unknown enum values to null.
+    /// </summary>
+    /// <typeparam name="TEnum">The enum type to convert.</typeparam>
+    private class NullOnUnknownEnumConverterGeneric<TEnum> : JsonConverter<TEnum?>
+      where TEnum : struct, Enum
+    {
+      /// <inheritdoc/>
+      public override TEnum? Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
+      {
+        // Explicit null in JSON
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+          return null;
+        }
+
+        // "Red", "GREEN", etc
+        if (reader.TokenType == JsonTokenType.String)
+        {
+          var s = reader.GetString();
+
+          if (Enum.TryParse<TEnum>(s, ignoreCase: true, out var value))
+          {
+            return value;
+          }
+
+          // Unknown string -> null
+          return null;
+        }
+
+        // 0, 1, 2, ...
+        if (reader.TokenType == JsonTokenType.Number)
+        {
+          if (reader.TryGetInt32(out var i))
+          {
+            // Only accept defined numeric values
+            if (Enum.IsDefined(typeof(TEnum), i))
+            {
+              return (TEnum)Enum.ToObject(typeof(TEnum), i);
+            }
+
+            // Unknown underlying value -> null
+            return null;
+          }
+
+          // Not even a valid int → treat as bad input
+          throw new JsonException($"Cannot convert number to {typeof(TEnum).Name}");
+        }
+
+        // Anything else is just invalid JSON for an enum
+        throw new JsonException($"Unexpected token {reader.TokenType} when parsing {typeof(TEnum).Name}");
+      }
+
+      /// <inheritdoc/>
+      public override void Write(
+        Utf8JsonWriter writer,
+        TEnum? value,
+        JsonSerializerOptions options)
+      {
+        if (value is null)
+        {
+          writer.WriteNullValue();
+          return;
+        }
+
+        // Serialize as string name
+        writer.WriteStringValue(value.Value.ToString());
+      }
+    }
   }
 }

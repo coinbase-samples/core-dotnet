@@ -29,7 +29,7 @@ public enum TestEnum
 
 public class TestDto
 {
-    [JsonConverter(typeof(NullOnUnknownEnumConverterGeneric<TestEnum>))]
+    [JsonConverter(typeof(NullOnUnknownEnumConverter))]
     public TestEnum? Status { get; set; }
 }
 
