@@ -58,7 +58,7 @@ namespace CoinbaseSdk.Core.Tests.Http
             var httpRequest = new CoinbaseHttpRequest(path, method, _credentials, request, _jsonUtility);
 
             Assert.Equal(HttpMethod.Post, httpRequest.Method);
-            Assert.Contains("\"name\":\"New User\"", httpRequest.Content);
+            Assert.Contains(""""name":"New User"""", httpRequest.Content);
             Assert.DoesNotContain("name=New User", httpRequest.Uri.Query);
         }
 

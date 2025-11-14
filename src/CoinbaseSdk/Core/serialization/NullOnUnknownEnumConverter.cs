@@ -54,12 +54,6 @@ namespace CoinbaseSdk.Core.Serialization
         Type typeToConvert,
         JsonSerializerOptions options)
       {
-        // Explicit null in JSON
-        if (reader.TokenType == JsonTokenType.Null)
-        {
-          return null;
-        }
-
         // "Red", "GREEN", etc
         if (reader.TokenType == JsonTokenType.String)
         {

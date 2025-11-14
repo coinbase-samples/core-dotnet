@@ -38,15 +38,29 @@ namespace CoinbaseSdk.Core.Tests.Serialization
         {
             var date = new DateTimeOffset(2023, 10, 27, 12, 0, 0, TimeSpan.Zero);
             var json = JsonSerializer.Serialize(date, _options);
-            Assert.Equal("\"2023-10-27T12:00:00.0000000Z\"", json);
+            Assert.Equal(@"""2023-10-27T12:00:00.0000000Z""", json);
         }
 
         [Fact]
         public void Deserialize_Iso8601String_ReturnsDateTimeOffset()
         {
-            var json = "\"2023-10-27T12:00:00.0000000Z\"";
+            var json = @"""2023-10-27T12:00:00.0000000Z""";
             var date = JsonSerializer.Deserialize<DateTimeOffset>(json, _options);
             Assert.Equal(new DateTimeOffset(2023, 10, 27, 12, 0, 0, TimeSpan.Zero), date);
+        }
+
+        [Fact]
+        public void Deserialize_InvalidDateString_ThrowsJsonException()
+        {
+            var json = @"""invalid-date""";
+            Assert.Throws<FormatException>(() => JsonSerializer.Deserialize<DateTimeOffset>(json, _options));
+        }
+
+        [Fact]
+        public void Deserialize_Number_ThrowsJsonException()
+        {
+            var json = "12345";
+            Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<DateTimeOffset>(json, _options));
         }
     }
 }
