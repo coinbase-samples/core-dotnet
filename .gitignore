@@ -12,3 +12,6 @@ project.lock.json
 
 .DS_Store
 .idea/
+
+AGENTS.md
+GEMINI.md
