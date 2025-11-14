@@ -16,20 +16,20 @@
 
 namespace CoinbaseSdk.Core.Serialization
 {
-  using System;
-  using System.Text.Json;
-  using System.Text.Json.Serialization;
+    using System;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
 
-  public class UtcIso8601DateTimeOffsetConverter : JsonConverter<DateTimeOffset>
-  {
-    public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public class UtcIso8601DateTimeOffsetConverter : JsonConverter<DateTimeOffset>
     {
-      return DateTimeOffset.Parse(reader.GetString());
-    }
+        public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return DateTimeOffset.Parse(reader.GetString());
+        }
 
-    public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
-    {
-      writer.WriteStringValue(value.UtcDateTime.ToString("o"));
+        public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.UtcDateTime.ToString("o"));
+        }
     }
-  }
 }

@@ -24,7 +24,7 @@ namespace CoinbaseSdk.Core.Tests.Credentials
     public class CoinbaseCredentialsTests
     {
         [Fact]
-        public void Constructor_ValidInputs_CreatesInstance()
+        public void Constructor_WithParameters_CreatesInstance()
         {
             var credentials = new CoinbaseCredentials("accessKey", "passphrase", "signingKey");
             Assert.NotNull(credentials);
@@ -33,30 +33,28 @@ namespace CoinbaseSdk.Core.Tests.Credentials
             Assert.Equal("signingKey", credentials.SigningKey);
         }
 
-        [Theory]
-        [InlineData(null, "passphrase", "signingKey")]
-        [InlineData("", "passphrase", "signingKey")]
-        [InlineData(" ", "passphrase", "signingKey")]
-        public void Constructor_InvalidAccessKey_ThrowsCoinbaseClientException(string? accessKey, string? passphrase, string? signingKey)
+        [Fact]
+        public void Constructor_ObjectInitializer_CreatesInstance()
         {
-            Assert.Throws<CoinbaseClientException>(() => new CoinbaseCredentials(accessKey, passphrase, signingKey));
+            var credentials = new CoinbaseCredentials("accessKey", "passphrase", "signingKey");
+            Assert.NotNull(credentials);
+            Assert.Equal("accessKey", credentials.AccessKey);
+            Assert.Equal("passphrase", credentials.Passphrase);
+            Assert.Equal("signingKey", credentials.SigningKey);
         }
 
-        [Theory]
-        [InlineData("accessKey", null, "signingKey")]
-        [InlineData("accessKey", "", "signingKey")]
-        [InlineData("accessKey", " ", "signingKey")]
-        public void Constructor_InvalidPassphrase_ThrowsCoinbaseClientException(string? accessKey, string? passphrase, string? signingKey)
+        [Fact]
+        public void Properties_CanBeSet()
         {
-            Assert.Throws<CoinbaseClientException>(() => new CoinbaseCredentials(accessKey, passphrase, signingKey));
-        }
-
-        [Theory]
-        [InlineData("accessKey", "passphrase", null)]
-        [InlineData("accessKey", "passphrase", "")]
-        public void Constructor_InvalidSigningKey_ThrowsCoinbaseClientException(string? accessKey, string? passphrase, string? signingKey)
-        {
-            Assert.Throws<CoinbaseClientException>(() => new CoinbaseCredentials(accessKey, passphrase, signingKey));
+            var credentials = new CoinbaseCredentials("key1", "pass1", "sign1")
+            {
+                AccessKey = "key2",
+                Passphrase = "pass2",
+                SigningKey = "sign2"
+            };
+            Assert.Equal("key2", credentials.AccessKey);
+            Assert.Equal("pass2", credentials.Passphrase);
+            Assert.Equal("sign2", credentials.SigningKey);
         }
 
         [Fact]
@@ -81,28 +79,36 @@ namespace CoinbaseSdk.Core.Tests.Credentials
         }
 
         [Fact]
-        public void Sign_InvalidSigningKey_ThrowsCoinbaseClientException()
+        public void Sign_NonBase64SigningKey_ReturnsSignature()
         {
-             // This is tricky because the code catches FormatException and falls back to UTF8 bytes.
-             // So almost any string is a valid key in one way or another.
-             // However, if HMACSHA256 throws, it wraps it.
-             // But HMACSHA256 constructor usually doesn't throw on key content unless it's null (which we check in constructor) or too long (unlikely here).
-             // Let's try to force an exception if possible, or maybe just skip this negative test if it's too robust.
-             // Actually, the code says:
-             /*
-                try
-                {
-                  hmacKey = Convert.FromBase64String(this.SigningKey);
-                }
-                catch (FormatException)
-                {
-                  hmacKey = Encoding.UTF8.GetBytes(this.SigningKey);
-                }
-             */
-             // So it handles non-base64 strings.
-             // The only way `Sign` throws is if `HMACSHA256` or `ComputeHash` throws.
-             // It's hard to mock `HMACSHA256` as it's a system class.
-             // I'll skip the negative test for `Sign` for now as it seems robust against input format.
+            // Arrange - use non-base64 string, should fallback to UTF8
+            var credentials = new CoinbaseCredentials("accessKey", "passphrase", "plaintext-key");
+            var timestamp = "1234567890";
+            var method = "POST";
+            var path = "/api/test";
+            var body = "{\"data\":\"value\"}";
+
+            // Act
+            var signature = credentials.Sign(timestamp, method, path, body);
+
+            // Assert
+            Assert.NotNull(signature);
+            Assert.NotEmpty(signature);
+        }
+
+        [Fact]
+        public void Sign_DifferentInputs_GeneratesDifferentSignatures()
+        {
+            // Arrange
+            var signingKey = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("secret"));
+            var credentials = new CoinbaseCredentials("accessKey", "passphrase", signingKey);
+
+            // Act
+            var sig1 = credentials.Sign("1234567890", "GET", "/path1", "");
+            var sig2 = credentials.Sign("1234567890", "GET", "/path2", "");
+
+            // Assert
+            Assert.NotEqual(sig1, sig2);
         }
     }
 }

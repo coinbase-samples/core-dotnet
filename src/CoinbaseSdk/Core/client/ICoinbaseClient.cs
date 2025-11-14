@@ -16,47 +16,47 @@
 
 namespace CoinbaseSdk.Core.Client
 {
-  using System.Net;
-  using System.Net.Http;
-  using System.Threading;
-  using System.Threading.Tasks;
-  using CoinbaseSdk.Core.Credentials;
-  using CoinbaseSdk.Core.Http;
-
-  /// <summary>
-  /// Interface that represents a Coinbase API Client.
-  /// </summary>
-  public interface ICoinbaseClient
-  {
-    /// <summary>
-    /// Gets the base path for the Coinbase API.
-    /// </summary>
-    string ApiBasePath { get; }
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using CoinbaseSdk.Core.Credentials;
+    using CoinbaseSdk.Core.Http;
 
     /// <summary>
-    /// Gets the credentials used by the client to authenticate requests.
+    /// Interface that represents a Coinbase API Client.
     /// </summary>
-    CoinbaseCredentials Credentials { get; }
+    public interface ICoinbaseClient
+    {
+        /// <summary>
+        /// Gets the base path for the Coinbase API.
+        /// </summary>
+        string ApiBasePath { get; }
 
-    /// <summary>
-    /// Send a synchronous request to the Coinbase Service Endpoint.
-    /// </summary>
-    /// <typeparam name="T">Return type of the Request.</typeparam>
-    /// <param name="method">HTTP Method for the Request.</param>
-    /// <param name="path">API Path.</param>
-    /// <param name="request">Request parameters.</param>
-    /// <param name="expectedStatusCodes">Set of expected Status Code.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <param name="callOptions"><see cref="CallOptions"/>.</param>
-    /// <returns>A task object representing the async operation.</returns>
-    Task<T> SendRequestAsync<T>(
-      HttpMethod method,
-      string path,
-      object request,
-      HttpStatusCode[] expectedStatusCodes,
-      CancellationToken cancellationToken,
+        /// <summary>
+        /// Gets the credentials used by the client to authenticate requests.
+        /// </summary>
+        CoinbaseCredentials Credentials { get; }
+
+        /// <summary>
+        /// Send a synchronous request to the Coinbase Service Endpoint.
+        /// </summary>
+        /// <typeparam name="T">Return type of the Request.</typeparam>
+        /// <param name="method">HTTP Method for the Request.</param>
+        /// <param name="path">API Path.</param>
+        /// <param name="request">Request parameters.</param>
+        /// <param name="expectedStatusCodes">Set of expected Status Code.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <param name="callOptions"><see cref="CallOptions"/>.</param>
+        /// <returns>A task object representing the async operation.</returns>
+        Task<T> SendRequestAsync<T>(
+          HttpMethod method,
+          string path,
+          object request,
+          HttpStatusCode[] expectedStatusCodes,
+          CancellationToken cancellationToken,
 #nullable enable
-      CallOptions? callOptions);
+          CallOptions? callOptions);
 #nullable disable
-  }
+    }
 }

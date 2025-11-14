@@ -16,42 +16,42 @@
 
 namespace CoinbaseSdk.Core.Serialization
 {
-  using System.Text.Json;
-  using System.Text.Json.Serialization;
-  using System.Text.Json.Serialization.Metadata;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
+    using System.Text.Json.Serialization.Metadata;
 
-  public class JsonUtility : IJsonUtility
-  {
-    private readonly JsonSerializerOptions options;
-
-    public JsonUtility()
+    public class JsonUtility : IJsonUtility
     {
-      this.options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-      {
-        Converters =
+        private readonly JsonSerializerOptions options;
+
+        public JsonUtility()
+        {
+            this.options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            {
+                Converters =
         {
           new NullOnUnknownEnumConverter(),
           new JsonStringEnumConverter(),
           new UtcIso8601DateTimeOffsetConverter(),
         },
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-      };
-    }
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+            };
+        }
 
-    public JsonUtility(JsonSerializerOptions options)
-    {
-      this.options = options;
-    }
+        public JsonUtility(JsonSerializerOptions options)
+        {
+            this.options = options;
+        }
 
-    public string Serialize(object obj)
-    {
-      return JsonSerializer.Serialize(obj, this.options);
-    }
+        public string Serialize(object obj)
+        {
+            return JsonSerializer.Serialize(obj, this.options);
+        }
 
-    public T Deserialize<T>(string json)
-    {
-      return JsonSerializer.Deserialize<T>(json, this.options);
+        public T Deserialize<T>(string json)
+        {
+            return JsonSerializer.Deserialize<T>(json, this.options);
+        }
     }
-  }
 }

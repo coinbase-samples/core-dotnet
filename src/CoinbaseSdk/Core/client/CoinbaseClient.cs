@@ -16,100 +16,100 @@
 
 namespace CoinbaseSdk.Core.Client
 {
-  using System;
-  using System.Linq;
-  using System.Net;
-  using System.Net.Http;
-  using System.Threading;
-  using System.Threading.Tasks;
-  using CoinbaseSdk.Core.Credentials;
-  using CoinbaseSdk.Core.Error;
-  using CoinbaseSdk.Core.Http;
-  using CoinbaseSdk.Core.Serialization;
-
-  /// <summary>
-  /// Interface that represents a Coinbase API Client.
-  /// </summary>
-  public abstract class CoinbaseClient : ICoinbaseClient
-  {
-    private readonly IHttpClient httpClient;
-    private readonly IJsonUtility jsonUtility;
+    using System;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using CoinbaseSdk.Core.Credentials;
+    using CoinbaseSdk.Core.Error;
+    using CoinbaseSdk.Core.Http;
+    using CoinbaseSdk.Core.Serialization;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CoinbaseClient"/> class.
+    /// Interface that represents a Coinbase API Client.
     /// </summary>
-    /// <param name="coinbaseCredentials">Api Credentials.</param>
-    /// <param name="apiBasePath">Base url path for the API.</param>
-    /// <param name="jsonUtility">A Utility to modify how Json is serialized/deserialized.</param>
-    /// <param name="httpClient">Http Client, will default to <see cref="SystemNetHttpClient"/>.</param>
-    /// <exception cref="ArgumentException">
-    /// Thrown if the Credentials are not valid or a base path is not provided.
-    /// </exception>
-    public CoinbaseClient(
-      CoinbaseCredentials coinbaseCredentials,
-      string apiBasePath,
-      IJsonUtility jsonUtility = null,
-      IHttpClient httpClient = null)
+    public abstract class CoinbaseClient : ICoinbaseClient
     {
-      this.Credentials = coinbaseCredentials ?? throw new ArgumentException("Credentials cannot be null", nameof(coinbaseCredentials));
+        private readonly IHttpClient httpClient;
+        private readonly IJsonUtility jsonUtility;
 
-      if (string.IsNullOrWhiteSpace(apiBasePath.Trim()))
-      {
-        throw new ArgumentException("API base path cannot be null or empty", nameof(apiBasePath));
-      }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CoinbaseClient"/> class.
+        /// </summary>
+        /// <param name="coinbaseCredentials">Api Credentials.</param>
+        /// <param name="apiBasePath">Base url path for the API.</param>
+        /// <param name="jsonUtility">A Utility to modify how Json is serialized/deserialized.</param>
+        /// <param name="httpClient">Http Client, will default to <see cref="SystemNetHttpClient"/>.</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the Credentials are not valid or a base path is not provided.
+        /// </exception>
+        public CoinbaseClient(
+          CoinbaseCredentials coinbaseCredentials,
+          string apiBasePath,
+          IJsonUtility jsonUtility = null,
+          IHttpClient httpClient = null)
+        {
+            this.Credentials = coinbaseCredentials ?? throw new ArgumentException("Credentials cannot be null", nameof(coinbaseCredentials));
 
-      this.ApiBasePath = apiBasePath;
+            if (string.IsNullOrWhiteSpace(apiBasePath.Trim()))
+            {
+                throw new ArgumentException("API base path cannot be null or empty", nameof(apiBasePath));
+            }
 
-      this.httpClient = httpClient ?? new SystemNetHttpClient();
-      this.jsonUtility = jsonUtility ?? new JsonUtility();
-    }
+            this.ApiBasePath = apiBasePath;
 
-    /// <inheritdoc/>
-    public string ApiBasePath { get; }
+            this.httpClient = httpClient ?? new SystemNetHttpClient();
+            this.jsonUtility = jsonUtility ?? new JsonUtility();
+        }
 
-    /// <inheritdoc/>
-    public CoinbaseCredentials Credentials { get; }
+        /// <inheritdoc/>
+        public string ApiBasePath { get; }
 
-    public IHttpClient HttpClient { get => this.httpClient; }
+        /// <inheritdoc/>
+        public CoinbaseCredentials Credentials { get; }
 
-    public IJsonUtility JsonUtility { get => this.jsonUtility; }
+        public IHttpClient HttpClient { get => this.httpClient; }
 
-    /// <inheritdoc/>
-    public virtual async Task<T> SendRequestAsync<T>(
-      HttpMethod method,
-      string path,
-      object options,
-      HttpStatusCode[] expectedStatusCodes,
-      CancellationToken cancellationToken,
+        public IJsonUtility JsonUtility { get => this.jsonUtility; }
+
+        /// <inheritdoc/>
+        public virtual async Task<T> SendRequestAsync<T>(
+          HttpMethod method,
+          string path,
+          object options,
+          HttpStatusCode[] expectedStatusCodes,
+          CancellationToken cancellationToken,
 #nullable enable
-      CallOptions? callOptions = null)
+          CallOptions? callOptions = null)
 #nullable disable
-    {
-      CoinbaseHttpRequest request = new CoinbaseHttpRequest(
-        $"{this.ApiBasePath}{path}",
-        method.Method,
-        this.Credentials,
-        options,
-        this.jsonUtility);
+        {
+            CoinbaseHttpRequest request = new CoinbaseHttpRequest(
+              $"{this.ApiBasePath}{path}",
+              method.Method,
+              this.Credentials,
+              options,
+              this.jsonUtility);
 
-      // Send the HTTP request
-      CoinbaseResponse response;
-      try
-      {
-        response = await this.httpClient.SendAsyncRequest(request, callOptions, cancellationToken);
-      }
-      catch (Exception ex)
-      {
-        throw new CoinbaseClientException(ex.Message, ex);
-      }
+            // Send the HTTP request
+            CoinbaseResponse response;
+            try
+            {
+                response = await this.httpClient.SendAsyncRequest(request, callOptions, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new CoinbaseClientException(ex.Message, ex);
+            }
 
-      // If the response is successful return the content as type T
-      if (!expectedStatusCodes.Contains(response.StatusCode))
-      {
-        throw new CoinbaseException(response.StatusCode, response.Content);
-      }
+            // If the response is successful return the content as type T
+            if (!expectedStatusCodes.Contains(response.StatusCode))
+            {
+                throw new CoinbaseException(response.StatusCode, response.Content);
+            }
 
-      return this.jsonUtility.Deserialize<T>(response.Content);
+            return this.jsonUtility.Deserialize<T>(response.Content);
+        }
     }
-  }
 }

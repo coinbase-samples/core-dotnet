@@ -16,8 +16,8 @@
 
 namespace CoinbaseSdk.Core.Error
 {
-  public interface ICoinbaseErrorMessage
-  {
-    public CoinbaseException CreateCoinbaseException();
-  }
+    public interface ICoinbaseErrorMessage
+    {
+        public CoinbaseException CreateCoinbaseException();
+    }
 }

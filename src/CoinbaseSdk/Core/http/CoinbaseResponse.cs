@@ -16,33 +16,33 @@
 
 namespace CoinbaseSdk.Core.Http
 {
-  using System.Net;
-  using System.Net.Http.Headers;
+    using System.Net;
+    using System.Net.Http.Headers;
 
-  /// <summary>Represents the response from a Coinbase API request.</summary>
-  public class CoinbaseResponse
-  {
-    /// <summary>Initializes a new instance of the <see cref="CoinbaseResponse"/> class.</summary>
-    /// <param name="statusCode">The HTTP status code.</param>
-    /// <param name="headers">The HTTP headers of the response.</param>
-    /// <param name="content">The body of the response.</param>
-    public CoinbaseResponse(HttpStatusCode statusCode, HttpResponseHeaders headers, string content)
+    /// <summary>Represents the response from a Coinbase API request.</summary>
+    public class CoinbaseResponse
     {
-        this.StatusCode = statusCode;
-        this.Headers = headers;
-        this.Content = content;
+        /// <summary>Initializes a new instance of the <see cref="CoinbaseResponse"/> class.</summary>
+        /// <param name="statusCode">The HTTP status code.</param>
+        /// <param name="headers">The HTTP headers of the response.</param>
+        /// <param name="content">The body of the response.</param>
+        public CoinbaseResponse(HttpStatusCode statusCode, HttpResponseHeaders headers, string content)
+        {
+            this.StatusCode = statusCode;
+            this.Headers = headers;
+            this.Content = content;
+        }
+
+        /// <summary>Gets the HTTP status code of the response.</summary>
+        /// <value>The HTTP status code of the response.</value>
+        public HttpStatusCode StatusCode { get; }
+
+        /// <summary>Gets the HTTP headers of the response.</summary>
+        /// <value>The HTTP headers of the response.</value>
+        public HttpResponseHeaders Headers { get; }
+
+        /// <summary>Gets the body of the response.</summary>
+        /// <value>The body of the response.</value>
+        public string Content { get; }
     }
-
-    /// <summary>Gets the HTTP status code of the response.</summary>
-    /// <value>The HTTP status code of the response.</value>
-    public HttpStatusCode StatusCode { get; }
-
-    /// <summary>Gets the HTTP headers of the response.</summary>
-    /// <value>The HTTP headers of the response.</value>
-    public HttpResponseHeaders Headers { get; }
-
-    /// <summary>Gets the body of the response.</summary>
-    /// <value>The body of the response.</value>
-    public string Content { get; }
-  }
 }
