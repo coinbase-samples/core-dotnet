@@ -42,7 +42,7 @@ namespace CoinbaseSdk.Core.Tests
     public void TestUnknownEnumValueConvertsToNull()
     {
       var jsonUtility = new JsonUtility();
-      var json = """{"category":"UNKNOWN_VALUE"}""";
+      var json = @"{""category"":""UNKNOWN_VALUE""}";
 
       var result = jsonUtility.Deserialize<TestModel>(json);
 
@@ -53,7 +53,7 @@ namespace CoinbaseSdk.Core.Tests
     public void TestKnownEnumValueDeserializes()
     {
       var jsonUtility = new JsonUtility();
-      var json = """{"category":"VALUE_ONE"}""";
+      var json = @"{""category"":""VALUE_ONE""}";
 
       var result = jsonUtility.Deserialize<TestModel>(json);
 
@@ -64,7 +64,7 @@ namespace CoinbaseSdk.Core.Tests
     public void TestKnownEnumValueDeserializesForNonNullable()
     {
       var jsonUtility = new JsonUtility();
-      var json = """{"category":"VALUE_TWO"}""";
+      var json = @"{""category"":""VALUE_TWO""}";
 
       var result = jsonUtility.Deserialize<NonNullableTestModel>(json);
 
@@ -75,7 +75,7 @@ namespace CoinbaseSdk.Core.Tests
     public void TestUnknownEnumValueThrowsForNonNullable()
     {
       var jsonUtility = new JsonUtility();
-      var json = """{"category":"UNKNOWN_VALUE"}""";
+      var json = @"{""category"":""UNKNOWN_VALUE""}";
 
       Assert.Throws<JsonException>(() => jsonUtility.Deserialize<NonNullableTestModel>(json));
     }

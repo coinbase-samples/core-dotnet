@@ -73,7 +73,7 @@ namespace CoinbaseSdk.Core.Tests.Client
             // Arrange
             var client = new TestCoinbaseClient(_credentials, _apiBasePath, _mockJsonUtility.Object, _mockHttpClient.Object);
             var expectedResponse = new TestModel { Category = TestEnum.VALUE_ONE };
-            var jsonResponse = """{"category":"VALUE_ONE"}""";
+            var jsonResponse = @"{""category"":""VALUE_ONE""}";
             var coinbaseResponse = new CoinbaseResponse(HttpStatusCode.OK, new HttpResponseMessage().Headers, jsonResponse);
 
             _mockHttpClient.Setup(x => x.SendAsyncRequest(It.IsAny<CoinbaseHttpRequest>(), It.IsAny<CallOptions>(), It.IsAny<CancellationToken>()))

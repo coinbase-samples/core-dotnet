@@ -34,13 +34,13 @@ namespace CoinbaseSdk.Core.Tests.Serialization
         {
             var obj = new { name = "Test" };
             var json = _jsonUtility.Serialize(obj);
-            Assert.Equal("""{"name":"Test"}""", json);
+            Assert.Equal(@"{""name"":""Test""}", json);
         }
 
         [Fact]
         public void Deserialize_JsonString_ReturnsObject()
         {
-            var json = """{"name":"Test"}""";
+            var json = @"{""name"":""Test""}";
             var obj = _jsonUtility.Deserialize<TestObject>(json);
             Assert.Equal("Test", obj.Name);
         }
@@ -52,7 +52,7 @@ namespace CoinbaseSdk.Core.Tests.Serialization
             var utility = new JsonUtility(options);
             var obj = new { Name = "Test" };
             var json = utility.Serialize(obj);
-            Assert.Equal("""{"name":"Test"}""", json);
+            Assert.Equal(@"{""name"":""Test""}", json);
         }
 
         private class TestObject
