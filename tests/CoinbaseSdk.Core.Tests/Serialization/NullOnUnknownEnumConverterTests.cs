@@ -43,7 +43,7 @@ public class NullOnUnknownEnumConverterTests
     [Fact]
     public void Read_KnownStringValue_ReturnsEnum()
     {
-        var json = """{"status": "Red"}""";
+        var json = @"{""status"": ""Red""}";
         var result = JsonSerializer.Deserialize<TestDto>(json, _options);
         Assert.Equal(TestEnum.Red, result?.Status);
     }
@@ -51,7 +51,7 @@ public class NullOnUnknownEnumConverterTests
     [Fact]
     public void Read_KnownStringValue_CaseInsensitive_ReturnsEnum()
     {
-        var json = """{"status": "green"}""";
+        var json = @"{""status"": ""green""}";
         var result = JsonSerializer.Deserialize<TestDto>(json, _options);
         Assert.Equal(TestEnum.Green, result?.Status);
     }
@@ -59,7 +59,7 @@ public class NullOnUnknownEnumConverterTests
     [Fact]
     public void Read_UnknownStringValue_ReturnsNull()
     {
-        var json = """{"status": "Yellow"}""";
+        var json = @"{""status"": ""Yellow""}";
         var result = JsonSerializer.Deserialize<TestDto>(json, _options);
         Assert.Null(result?.Status);
     }
@@ -67,7 +67,7 @@ public class NullOnUnknownEnumConverterTests
     [Fact]
     public void Read_ExplicitNull_ReturnsNull()
     {
-        var json = """{"status": null}""";
+        var json = @"{""status"": null}";
         var result = JsonSerializer.Deserialize<TestDto>(json, _options);
         Assert.Null(result?.Status);
     }
@@ -75,7 +75,7 @@ public class NullOnUnknownEnumConverterTests
     [Fact]
     public void Read_KnownNumericValue_ReturnsEnum()
     {
-        var json = """{"status": 1}""";
+        var json = @"{""status"": 1}";
         var result = JsonSerializer.Deserialize<TestDto>(json, _options);
         Assert.Equal(TestEnum.Green, result?.Status);
     }
@@ -83,7 +83,7 @@ public class NullOnUnknownEnumConverterTests
     [Fact]
     public void Read_UnknownNumericValue_ReturnsNull()
     {
-        var json = """{"status": 999}""";
+        var json = @"{""status"": 999}";
         var result = JsonSerializer.Deserialize<TestDto>(json, _options);
         Assert.Null(result?.Status);
     }
@@ -91,7 +91,7 @@ public class NullOnUnknownEnumConverterTests
     [Fact]
     public void Read_InvalidToken_ThrowsJsonException()
     {
-        var json = """{"status": true}""";
+        var json = @"{""status"": true}";
         var ex = Assert.Throws<JsonException>(() =>
             JsonSerializer.Deserialize<TestDto>(json, _options));
         Assert.Contains("Unexpected token", ex.Message);
@@ -100,7 +100,7 @@ public class NullOnUnknownEnumConverterTests
     [Fact]
     public void Read_NonIntNumber_ThrowsJsonException()
     {
-        var json = """{"status": 1.5}""";
+        var json = @"{""status"": 1.5}";
         var ex = Assert.Throws<JsonException>(() =>
             JsonSerializer.Deserialize<TestDto>(json, _options));
         Assert.Contains("Cannot convert number", ex.Message);
