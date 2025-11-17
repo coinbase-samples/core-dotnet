@@ -34,27 +34,21 @@ namespace CoinbaseSdk.Core.Tests.Credentials
         }
 
         [Fact]
-        public void Constructor_ObjectInitializer_CreatesInstance()
+        public void Constructor_NullAccessKey_ThrowsArgumentNullException()
         {
-            var credentials = new CoinbaseCredentials("accessKey", "passphrase", "signingKey");
-            Assert.NotNull(credentials);
-            Assert.Equal("accessKey", credentials.AccessKey);
-            Assert.Equal("passphrase", credentials.Passphrase);
-            Assert.Equal("signingKey", credentials.SigningKey);
+            Assert.Throws<ArgumentNullException>(() => new CoinbaseCredentials(null, "passphrase", "signingKey"));
         }
 
         [Fact]
-        public void Properties_CanBeSet()
+        public void Constructor_NullPassphrase_ThrowsArgumentNullException()
         {
-            var credentials = new CoinbaseCredentials("key1", "pass1", "sign1")
-            {
-                AccessKey = "key2",
-                Passphrase = "pass2",
-                SigningKey = "sign2"
-            };
-            Assert.Equal("key2", credentials.AccessKey);
-            Assert.Equal("pass2", credentials.Passphrase);
-            Assert.Equal("sign2", credentials.SigningKey);
+            Assert.Throws<ArgumentNullException>(() => new CoinbaseCredentials("accessKey", null, "signingKey"));
+        }
+
+        [Fact]
+        public void Constructor_NullSigningKey_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new CoinbaseCredentials("accessKey", "passphrase", null));
         }
 
         [Fact]

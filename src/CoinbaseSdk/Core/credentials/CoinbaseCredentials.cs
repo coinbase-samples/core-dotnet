@@ -26,11 +26,11 @@ namespace CoinbaseSdk.Core.Credentials
     /// </summary>
     public class CoinbaseCredentials(string accessKey, string passphrase, string signingKey)
     {
-        public string AccessKey { get; set; } = accessKey;
+        public string AccessKey { get; } = accessKey ?? throw new ArgumentNullException(nameof(accessKey));
 
-        public string Passphrase { get; set; } = passphrase;
+        public string Passphrase { get; } = passphrase ?? throw new ArgumentNullException(nameof(passphrase));
 
-        public string SigningKey { get; set; } = signingKey;
+        public string SigningKey { get; } = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
 
         public string Sign(string timestamp, string method, string path, string body)
         {
