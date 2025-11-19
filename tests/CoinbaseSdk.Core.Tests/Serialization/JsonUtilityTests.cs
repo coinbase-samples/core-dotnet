@@ -18,6 +18,8 @@ namespace CoinbaseSdk.Core.Tests.Serialization
 {
     using System;
     using System.Text.Json;
+    using System.Text.Json.Serialization;
+    using System.Text.Json.Serialization.Metadata;
     using CoinbaseSdk.Core.Serialization;
     using Xunit;
 
@@ -62,33 +64,23 @@ namespace CoinbaseSdk.Core.Tests.Serialization
         }
 
         [Fact]
-        public void ConfigureDefaults_BeforeCreation_ModifiesOptions()
+        public void DefaultOptions_IncludeExpectedConverters()
         {
-            JsonUtility.ConfigureDefaults(options =>
-            {
-                options.PropertyNamingPolicy = null;
-                options.DictionaryKeyPolicy = null;
-            });
+            var options = JsonUtility.DefaultOptions;
 
-            var jsonUtility = new JsonUtility();
-            var obj = new { Name = "Test" };
-            var json = jsonUtility.Serialize(obj);
-            Assert.Equal(@"{""Name"":""Test""}", json);
+            Assert.Contains(options.Converters, converter => converter is JsonStringEnumConverter);
+            Assert.Contains(options.Converters, converter => converter is NullOnUnknownEnumConverter);
+            Assert.Contains(options.Converters, converter => converter is UtcIso8601DateTimeOffsetConverter);
         }
 
         [Fact]
-        public void UseCustomDefaultFactory_ReplacesOptions()
+        public void DefaultOptions_UseExpectedSerializerSettings()
         {
-            JsonUtility.UseCustomDefaultFactory(() => new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = null,
-                DictionaryKeyPolicy = null,
-            });
+            var options = JsonUtility.DefaultOptions;
 
-            var jsonUtility = new JsonUtility();
-            var obj = new { Name = "Factory" };
-            var json = jsonUtility.Serialize(obj);
-            Assert.Equal(@"{""Name"":""Factory""}", json);
+            Assert.True(options.PropertyNameCaseInsensitive);
+            Assert.Equal(JsonIgnoreCondition.WhenWritingNull, options.DefaultIgnoreCondition);
+            Assert.IsType<DefaultJsonTypeInfoResolver>(options.TypeInfoResolver);
         }
 
         private class TestObject

@@ -53,7 +53,7 @@ namespace CoinbaseSdk.Core.Client
         {
             this.Credentials = coinbaseCredentials ?? throw new ArgumentException("Credentials cannot be null", nameof(coinbaseCredentials));
 
-            if (string.IsNullOrWhiteSpace(apiBasePath.Trim()))
+            if (string.IsNullOrWhiteSpace(apiBasePath))
             {
                 throw new ArgumentException("API base path cannot be null or empty", nameof(apiBasePath));
             }
