@@ -16,32 +16,38 @@
 
 namespace CoinbaseSdk.Core.Tests.Serialization
 {
+    using System;
     using System.Text.Json;
     using CoinbaseSdk.Core.Serialization;
     using Xunit;
 
-    public class JsonUtilityTests
+    public class JsonUtilityTests : IDisposable
     {
-        private readonly JsonUtility _jsonUtility;
-
         public JsonUtilityTests()
         {
-            _jsonUtility = new JsonUtility();
+            JsonUtility.ResetDefaultsForTesting();
+        }
+
+        public void Dispose()
+        {
+            JsonUtility.ResetDefaultsForTesting();
         }
 
         [Fact]
         public void Serialize_Object_ReturnsJsonString()
         {
+            var jsonUtility = new JsonUtility();
             var obj = new { name = "Test" };
-            var json = _jsonUtility.Serialize(obj);
+            var json = jsonUtility.Serialize(obj);
             Assert.Equal(@"{""name"":""Test""}", json);
         }
 
         [Fact]
         public void Deserialize_JsonString_ReturnsObject()
         {
+            var jsonUtility = new JsonUtility();
             var json = @"{""name"":""Test""}";
-            var obj = _jsonUtility.Deserialize<TestObject>(json);
+            var obj = jsonUtility.Deserialize<TestObject>(json);
             Assert.Equal("Test", obj.Name);
         }
 
@@ -53,6 +59,36 @@ namespace CoinbaseSdk.Core.Tests.Serialization
             var obj = new { Name = "Test" };
             var json = utility.Serialize(obj);
             Assert.Equal(@"{""name"":""Test""}", json);
+        }
+
+        [Fact]
+        public void ConfigureDefaults_BeforeCreation_ModifiesOptions()
+        {
+            JsonUtility.ConfigureDefaults(options =>
+            {
+                options.PropertyNamingPolicy = null;
+                options.DictionaryKeyPolicy = null;
+            });
+
+            var jsonUtility = new JsonUtility();
+            var obj = new { Name = "Test" };
+            var json = jsonUtility.Serialize(obj);
+            Assert.Equal(@"{""Name"":""Test""}", json);
+        }
+
+        [Fact]
+        public void UseCustomDefaultFactory_ReplacesOptions()
+        {
+            JsonUtility.UseCustomDefaultFactory(() => new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = null,
+                DictionaryKeyPolicy = null,
+            });
+
+            var jsonUtility = new JsonUtility();
+            var obj = new { Name = "Factory" };
+            var json = jsonUtility.Serialize(obj);
+            Assert.Equal(@"{""Name"":""Factory""}", json);
         }
 
         private class TestObject
