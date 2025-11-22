@@ -5,16 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2025-11-20
+## [0.1.0] - 2025-11-24
 
 ### Added
-- `NullOnUnknownEnumConverter` and supporting generic converter to treat unknown enum values as `null`.
-- `CoinbaseSdk.Core.Tests` xUnit project validating serialization behavior.
-- Comprehensive unit tests for `CoinbaseClient`, `CoinbaseCredentials`, `CoinbaseException`, `CoinbaseHttpRequest`, `JsonUtility`, and `UtcIso8601DateTimeOffsetConverter`.
+- **Centralized Configuration**: Added `HttpClientDefaults` and `RetryPolicyDefaults` for consistent default values.
+- **Extensibility Hooks**: Added protected virtual methods in `CoinbaseClient` (`BuildRequest`, `ConfigureRequest`, `SendHttpRequestAsync`, `ValidateResponse`) to simplify subclass customization.
+- **Robust Serialization**: Added `NullOnUnknownEnumConverter` to gracefully handle unknown enum values as `null` during deserialization.
+- **Testing Infrastructure**: Added `StubHttpMessageHandler` and comprehensive unit tests covering client logic, credentials, error handling, and serialization.
 
 ### Changed
-- `JsonUtility` now wires the new enum converter, retains string enum serialization, and opts into `DefaultJsonTypeInfoResolver`.
-- Solution and packaging updated for version `0.1.0`, including test project references.
+- **Code Refactoring**: Consolidated request logic and exception handling in `CoinbaseClient`, significantly reducing code duplication in subclasses like `CoinbasePrimeClient`.
+- **Retry Logic Simplified**: Removed redundant `IRetryPolicyProvider` abstraction; `SystemNetHttpClient` now integrates directly with the Polly policy provider.
+- **Thread Safety**: Improved `JsonUtility` initialization using `Lazy<T>` to replace manual locking.
+- **API Visibility**: Restricted visibility of internal properties (e.g., `CoinbaseClient.HttpClient`, `CoinbaseService.Client`) to `protected` to better encapsulate implementation details.
+- **Documentation**: Unified retry policy and cancellation documentation across XML comments and README.
 
 ### Fixed
-- `NullReferenceException` in `CoinbaseCredentials` constructor when validating null input parameters.
+- **Parameter Validation**: Fixed potential `NullReferenceException` in `CoinbaseCredentials` constructor.

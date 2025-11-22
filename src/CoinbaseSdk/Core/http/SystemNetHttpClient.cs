@@ -18,16 +18,15 @@ namespace CoinbaseSdk.Core.Http
 {
     using System;
     using System.IO;
-    using System.Net;
     using System.Net.Http;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Standard client to make requests to Coinbase's API, using
-    /// <see cref="HttpClient"/> to send HTTP requests. This is a simple client
-    /// that does NOT include any retry logic.
+    /// Standard HTTP client implementation for Coinbase API requests.
+    /// Supports optional Polly-based retries via <see cref="CallOptions"/>.
+    /// See the core-dotnet README for retry configuration details.
     /// </summary>
     public class SystemNetHttpClient : IHttpClient
     {
@@ -35,6 +34,7 @@ namespace CoinbaseSdk.Core.Http
             = new Lazy<HttpClient>(BuildDefaultSystemNetHttpClient);
 
         private readonly HttpClient httpClient;
+        private readonly CallOptions defaultCallOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemNetHttpClient"/> class.
@@ -46,11 +46,17 @@ namespace CoinbaseSdk.Core.Http
         /// <param name="timeout">
         /// The timespan before the request times out.
         /// </param>
+        /// <param name="defaultCallOptions">
+        /// Optional default retry configuration applied to every request unless
+        /// a per-request <see cref="CallOptions"/> override is supplied.
+        /// </param>
         public SystemNetHttpClient(
             HttpClient httpClient = null,
-            TimeSpan? timeout = null)
+            TimeSpan? timeout = null,
+            CallOptions defaultCallOptions = null)
         {
             this.httpClient = httpClient ?? LazyDefaultHttpClient.Value;
+            this.defaultCallOptions = defaultCallOptions;
 
             if (timeout.HasValue)
             {
@@ -59,7 +65,7 @@ namespace CoinbaseSdk.Core.Http
         }
 
         /// <summary>Default timespan before the request times out.</summary>
-        public static TimeSpan DefaultHttpTimeout => TimeSpan.FromSeconds(15);
+        public static TimeSpan DefaultHttpTimeout => HttpClientDefaults.RequestTimeout;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClient"/> class
@@ -75,89 +81,50 @@ namespace CoinbaseSdk.Core.Http
         }
 
         /// <summary>Sends a request to Coinbase API as an asynchronous operation.</summary>
-        /// <param name="request">The parameters of the request to send.</param>
-        /// <param name="callOptions">The configured <see cref="CallOptions"/>.</param>
-        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <param name="request">The request to send.</param>
+        /// <param name="callOptions">
+        /// Optional retry configuration. If null or MaxRetries = 0, the request executes once.
+        /// See <see cref="CallOptions"/> for retry settings.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// Cancellation token. Canceling stops any pending retry attempts immediately.
+        /// </param>
         /// <returns>The task object representing the asynchronous operation.</returns>
         public async Task<CoinbaseResponse> SendAsyncRequest(
             CoinbaseHttpRequest request,
             CallOptions callOptions = null,
             CancellationToken cancellationToken = default)
         {
-            var response = await this.SendHttpRequest(request, cancellationToken).ConfigureAwait(false);
+            var effectiveCallOptions = callOptions ?? this.defaultCallOptions;
+            var response = await this.SendHttpRequest(request, effectiveCallOptions, cancellationToken).ConfigureAwait(false);
 
-            var reader = new StreamReader(
-                await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
+            using (response)
+            {
+                using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using var reader = new StreamReader(responseStream);
+                var responseBody = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-            return new CoinbaseResponse(
-                response.StatusCode,
-                response.Headers,
-                await reader.ReadToEndAsync().ConfigureAwait(false));
+                return new CoinbaseResponse(
+                    response.StatusCode,
+                    response.Headers,
+                    responseBody);
+            }
         }
 
         private async Task<HttpResponseMessage> SendHttpRequest(
             CoinbaseHttpRequest request,
-            CancellationToken cancellationToken,
-            CallOptions callOptions = null)
+            CallOptions callOptions,
+            CancellationToken cancellationToken)
         {
-            Exception requestException;
-            HttpResponseMessage response = null;
-            requestException = null;
-            callOptions ??= new CallOptions();
-            var retry = 0;
+            var policy = PollyRetryPolicyProvider.Instance.BuildPolicy(callOptions, cancellationToken);
 
-            var httpRequest = this.BuildRequestMessage(request);
-
-            while (true)
-            {
-                try
+            return await policy.ExecuteAsync(
+                async ct =>
                 {
-                    response = await this.httpClient.SendAsync(httpRequest, cancellationToken)
-                        .ConfigureAwait(false);
-                }
-                catch (HttpRequestException exception)
-                {
-                    requestException = exception;
-                }
-                catch (OperationCanceledException exception)
-                    when (!cancellationToken.IsCancellationRequested)
-                {
-                    requestException = exception;
-                }
-
-                if (!this.ShouldRetry(
-                            callOptions,
-                            retry,
-                            requestException != null,
-                            response?.StatusCode))
-                {
-                    break;
-                }
-
-                retry += 1;
-
-                // Calculate the exponential backoff delay
-                var delay = TimeSpan.FromTicks(callOptions.MinNetworkRetriesDelay.Ticks * (1L << (retry - 1)));
-
-                // Clamp the delay between the minimum and maximum delay values
-                if (delay < callOptions.MinNetworkRetriesDelay)
-                {
-                    delay = callOptions.MinNetworkRetriesDelay;
-                }
-                else if (delay > callOptions.MaxNetworkRetriesDelay)
-                {
-                    delay = callOptions.MaxNetworkRetriesDelay;
-                }
-
-                await Task.Delay(delay, cancellationToken);
-            }
-
-            if (requestException != null)
-            {
-                throw requestException;
-            }
-
-            return response;
+                    using var httpRequest = this.BuildRequestMessage(request);
+                    return await this.httpClient.SendAsync(httpRequest, ct).ConfigureAwait(false);
+                },
+                cancellationToken).ConfigureAwait(false);
         }
 
         private HttpRequestMessage BuildRequestMessage(CoinbaseHttpRequest request)
@@ -175,35 +142,6 @@ namespace CoinbaseSdk.Core.Http
             }
 
             return requestMessage;
-        }
-
-        private bool ShouldRetry(
-            CallOptions callOptions,
-            int numRetries,
-            bool requestException,
-            HttpStatusCode? statusCode)
-        {
-            if (numRetries >= callOptions.MaxRetries)
-            {
-                return false;
-            }
-
-            if (requestException)
-            {
-                return true;
-            }
-
-            if (!callOptions.ShouldRetryOnStatusCodes)
-            {
-                return false;
-            }
-
-            if (statusCode.HasValue && callOptions.RetryableStatusCodes.Contains(statusCode.Value))
-            {
-                return true;
-            }
-
-            return false;
         }
     }
 }

@@ -19,38 +19,59 @@ namespace CoinbaseSdk.Core.Http
     using System;
     using System.Collections.Generic;
     using System.Net;
+    using System.Threading;
 
     /// <summary>
-    /// Options for the HttpClient to use when making requests. Most of the options
-    /// are related to retry logic.
+    /// Configuration options for retry behavior using Polly's decorrelated jitter backoff.
+    /// Retries are disabled by default (<see cref="MaxRetries"/> = 0).
+    /// See the core-dotnet README for configuration examples.
     /// </summary>
     public class CallOptions
     {
         /// <summary>
-        /// Defaults to false. If true the client will retry on any status code
-        /// provided in <see cref="RetryableStatusCodes"/>.
+        /// Defaults to 0 (retries disabled). The maximum number of retry attempts
+        /// (in addition to the initial request). Set to a positive value to enable retries.
         /// </summary>
-        public bool ShouldRetryOnStatusCodes { get; set; } = false; // Default retry
+        public int MaxRetries { get; set; } = RetryPolicyDefaults.MaxRetries;
 
         /// <summary>
-        /// Defaults to 3. The maximum number of retries.
+        /// Defaults to 500 milliseconds. The target median delay for the first retry
+        /// when using decorrelated jitter backoff. Actual delays may vary above or below
+        /// this value due to jitter, which helps prevent retry storms.
+        /// Only used when <see cref="MaxRetries"/> is greater than zero.
         /// </summary>
-        public int MaxRetries { get; set; } = 3; // Default max retries
+        public TimeSpan MedianFirstRetryDelay { get; set; } = RetryPolicyDefaults.MedianFirstRetryDelay;
 
         /// <summary>
-        /// Defaults to 500 milliseconds. The minimum delay between calls.
+        /// Defaults to 1 second. The maximum delay cap for any retry attempt.
+        /// Prevents delays from growing unbounded on later retry attempts.
+        /// Only used when <see cref="MaxRetries"/> is greater than zero.
         /// </summary>
-        public TimeSpan MinNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(0.5); // Default minimum delay
+        public TimeSpan MaxRetryDelay { get; set; } = RetryPolicyDefaults.MaxRetryDelay;
 
         /// <summary>
-        /// Defaults to 1 second. The maximum delay between calls.
+        /// Defaults to false. When true, the client evaluates HTTP responses against
+        /// <see cref="RetryableStatusCodes"/> in addition to standard transient failures
+        /// (network exceptions, timeouts, etc.). Only applies when <see cref="MaxRetries"/>
+        /// is greater than zero.
         /// </summary>
-        public TimeSpan MaxNetworkRetriesDelay { get; set; } = TimeSpan.FromSeconds(1); // Default maximum delay
+        public bool ShouldRetryOnStatusCodes { get; set; } = RetryPolicyDefaults.ShouldRetryOnStatusCodes;
 
         /// <summary>
-        /// Defaults to an empty set. The status codes to retry on when
-        /// <see cref="ShouldRetryOnStatusCodes"/> is true.
+        /// Defaults to an empty set. The HTTP status codes to retry on when
+        /// <see cref="ShouldRetryOnStatusCodes"/> is true. Should contain a bounded set
+        /// of retryable responses (e.g., 429 Too Many Requests, 503 Service Unavailable).
+        /// Only used when both <see cref="ShouldRetryOnStatusCodes"/> is true and
+        /// <see cref="MaxRetries"/> is greater than zero.
         /// </summary>
-        public HashSet<HttpStatusCode> RetryableStatusCodes { get; set; } = new HashSet<HttpStatusCode> { }; // Default retryable status codes
+        public HashSet<HttpStatusCode> RetryableStatusCodes { get; set; } = new HashSet<HttpStatusCode>();
+
+        /// <summary>
+        /// Returns true when retries are enabled and a Polly policy should be created.
+        /// </summary>
+        internal bool HasRetryConfiguration()
+        {
+            return this.MaxRetries > 0;
+        }
     }
 }

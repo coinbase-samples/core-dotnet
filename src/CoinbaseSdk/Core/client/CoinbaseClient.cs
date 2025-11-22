@@ -70,9 +70,15 @@ namespace CoinbaseSdk.Core.Client
         /// <inheritdoc/>
         public CoinbaseCredentials Credentials { get; }
 
-        public IHttpClient HttpClient { get => this.httpClient; }
+        /// <summary>
+        /// Gets the HTTP client used to send requests. Protected for use by derived classes.
+        /// </summary>
+        protected IHttpClient HttpClient => this.httpClient;
 
-        public IJsonUtility JsonUtility { get => this.jsonUtility; }
+        /// <summary>
+        /// Gets the JSON utility used for serialization. Protected for use by derived classes.
+        /// </summary>
+        protected IJsonUtility JsonUtility => this.jsonUtility;
 
         /// <inheritdoc/>
         public virtual async Task<T> SendRequestAsync<T>(
@@ -85,31 +91,79 @@ namespace CoinbaseSdk.Core.Client
           CallOptions? callOptions = null)
 #nullable disable
         {
-            CoinbaseHttpRequest request = new CoinbaseHttpRequest(
+            CoinbaseHttpRequest request = this.BuildRequest(method, path, options);
+            this.ConfigureRequest(request);
+
+            CoinbaseResponse response = await this.SendHttpRequestAsync(request, callOptions, cancellationToken);
+
+            this.ValidateResponse(response, expectedStatusCodes);
+
+            return this.jsonUtility.Deserialize<T>(response.Content);
+        }
+
+        /// <summary>
+        /// Builds the initial <see cref="CoinbaseHttpRequest"/> from the provided parameters.
+        /// </summary>
+        /// <param name="method">HTTP method.</param>
+        /// <param name="path">API path.</param>
+        /// <param name="options">Request parameters.</param>
+        /// <returns>The configured request.</returns>
+        protected virtual CoinbaseHttpRequest BuildRequest(HttpMethod method, string path, object options)
+        {
+            return new CoinbaseHttpRequest(
               $"{this.ApiBasePath}{path}",
               method.Method,
               this.Credentials,
               options,
               this.jsonUtility);
+        }
 
-            // Send the HTTP request
-            CoinbaseResponse response;
+        /// <summary>
+        /// Configures the request before sending (e.g., adding custom headers).
+        /// Override this method to add client-specific headers or request modifications.
+        /// </summary>
+        /// <param name="request">The request to configure.</param>
+        protected virtual void ConfigureRequest(CoinbaseHttpRequest request)
+        {
+            // Default implementation does nothing; subclasses can override
+        }
+
+        /// <summary>
+        /// Sends the HTTP request and handles exceptions.
+        /// </summary>
+        /// <param name="request">The request to send.</param>
+        /// <param name="callOptions">Retry options.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The response.</returns>
+        /// <exception cref="CoinbaseClientException">Thrown when the HTTP request fails.</exception>
+        protected virtual async Task<CoinbaseResponse> SendHttpRequestAsync(
+            CoinbaseHttpRequest request,
+            CallOptions callOptions,
+            CancellationToken cancellationToken)
+        {
             try
             {
-                response = await this.httpClient.SendAsyncRequest(request, callOptions, cancellationToken);
+                return await this.httpClient.SendAsyncRequest(request, callOptions, cancellationToken);
             }
             catch (Exception ex)
             {
                 throw new CoinbaseClientException(ex.Message, ex);
             }
+        }
 
-            // If the response is successful return the content as type T
+        /// <summary>
+        /// Validates the response status code and throws an exception if it's not expected.
+        /// Override this method to customize error handling or deserialization.
+        /// </summary>
+        /// <param name="response">The response to validate.</param>
+        /// <param name="expectedStatusCodes">Expected status codes.</param>
+        /// <exception cref="CoinbaseException">Thrown when the response status is not expected.</exception>
+        protected virtual void ValidateResponse(CoinbaseResponse response, HttpStatusCode[] expectedStatusCodes)
+        {
             if (!expectedStatusCodes.Contains(response.StatusCode))
             {
                 throw new CoinbaseException(response.StatusCode, response.Content);
             }
-
-            return this.jsonUtility.Deserialize<T>(response.Content);
         }
     }
 }

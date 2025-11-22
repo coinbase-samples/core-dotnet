@@ -44,7 +44,10 @@ namespace CoinbaseSdk.Core.Service
             this.client = client;
         }
 
-        public ICoinbaseClient Client
+        /// <summary>
+        /// Gets or sets the client used by the service to send requests.
+        /// </summary>
+        protected ICoinbaseClient Client
         {
             get => this.client;
             set => this.client = value;

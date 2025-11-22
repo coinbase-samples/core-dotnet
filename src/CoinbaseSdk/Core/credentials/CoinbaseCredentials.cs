@@ -24,13 +24,31 @@ namespace CoinbaseSdk.Core.Credentials
     /// <summary>
     /// Class that represents the credentials used to authenticate with the Coinbase API.
     /// </summary>
-    public class CoinbaseCredentials(string accessKey, string passphrase, string signingKey)
+    public class CoinbaseCredentials
     {
-        public string AccessKey { get; } = accessKey ?? throw new ArgumentNullException(nameof(accessKey));
+        private readonly byte[] hmacKeyBytes;
 
-        public string Passphrase { get; } = passphrase ?? throw new ArgumentNullException(nameof(passphrase));
+        public CoinbaseCredentials(string accessKey, string passphrase, string signingKey)
+        {
+            this.AccessKey = accessKey ?? throw new ArgumentNullException(nameof(accessKey));
+            this.Passphrase = passphrase ?? throw new ArgumentNullException(nameof(passphrase));
+            this.SigningKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
 
-        public string SigningKey { get; } = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
+            try
+            {
+                this.hmacKeyBytes = Convert.FromBase64String(this.SigningKey);
+            }
+            catch (FormatException)
+            {
+                this.hmacKeyBytes = Encoding.UTF8.GetBytes(this.SigningKey);
+            }
+        }
+
+        public string AccessKey { get; }
+
+        public string Passphrase { get; }
+
+        public string SigningKey { get; }
 
         public string Sign(string timestamp, string method, string path, string body)
         {
@@ -38,17 +56,7 @@ namespace CoinbaseSdk.Core.Credentials
             {
                 string message = $"{timestamp}{method}{path}{body}";
 
-                byte[] hmacKey;
-                try
-                {
-                    hmacKey = Convert.FromBase64String(this.SigningKey);
-                }
-                catch (FormatException)
-                {
-                    hmacKey = Encoding.UTF8.GetBytes(this.SigningKey);
-                }
-
-                using var hmac = new HMACSHA256(hmacKey);
+                using var hmac = new HMACSHA256(this.hmacKeyBytes);
                 byte[] signature = hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
                 return Convert.ToBase64String(signature);
             }

@@ -23,17 +23,8 @@ namespace CoinbaseSdk.Core.Tests.Serialization
     using CoinbaseSdk.Core.Serialization;
     using Xunit;
 
-    public class JsonUtilityTests : IDisposable
+    public class JsonUtilityTests
     {
-        public JsonUtilityTests()
-        {
-            JsonUtility.ResetDefaultsForTesting();
-        }
-
-        public void Dispose()
-        {
-            JsonUtility.ResetDefaultsForTesting();
-        }
 
         [Fact]
         public void Serialize_Object_ReturnsJsonString()
