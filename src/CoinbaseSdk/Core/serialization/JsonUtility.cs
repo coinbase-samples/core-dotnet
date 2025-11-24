@@ -73,6 +73,11 @@ namespace CoinbaseSdk.Core.Serialization
 
         private static JsonSerializerOptions EnsureDefaultOptions()
         {
+            if (defaultOptions != null)
+            {
+                return defaultOptions;
+            }
+
             lock (DefaultOptionsLock)
             {
                 if (defaultOptions == null)

@@ -110,8 +110,9 @@ namespace CoinbaseSdk.Core.Client
         /// <returns>The configured request.</returns>
         protected virtual CoinbaseHttpRequest BuildRequest(HttpMethod method, string path, object options)
         {
+            var fullPath = $"{this.ApiBasePath.TrimEnd('/')}/{path.TrimStart('/')}";
             return new CoinbaseHttpRequest(
-              $"{this.ApiBasePath}{path}",
+              fullPath,
               method.Method,
               this.Credentials,
               options,

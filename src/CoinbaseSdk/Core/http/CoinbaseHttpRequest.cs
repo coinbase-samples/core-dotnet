@@ -77,7 +77,18 @@ namespace CoinbaseSdk.Core.Http
 
         private Uri BuildUri(string baseUri, object request = null)
         {
-            var uriBuilder = new UriBuilder($"https://{baseUri}")
+            Uri uri;
+            if (baseUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                baseUri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                uri = new Uri(baseUri);
+            }
+            else
+            {
+                uri = new Uri($"https://{baseUri}");
+            }
+
+            var uriBuilder = new UriBuilder(uri)
             {
                 Query = this.ToQueryString(request),
             };
