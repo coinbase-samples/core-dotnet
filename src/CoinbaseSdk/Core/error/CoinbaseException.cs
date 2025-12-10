@@ -16,53 +16,53 @@
 
 namespace CoinbaseSdk.Core.Error
 {
-  using System.Net;
-
-  /// <summary>
-  /// Exception thrown when an error occurs in the Coinbase API.
-  /// </summary>
-  public class CoinbaseException : System.Exception
-  {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a message.
-    /// </summary>
-    /// <param name="message">Error message.</param>
-    public CoinbaseException(string message)
-      : base(message)
-    {
-    }
+    using System.Net;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a cause.
+    /// Exception thrown when an error occurs in the Coinbase API.
     /// </summary>
-    /// <param name="cause">Underlying exception.</param>
-    public CoinbaseException(System.Exception cause)
-        : base(cause.Message, cause)
+    public class CoinbaseException : System.Exception
     {
-    }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a message.
+        /// </summary>
+        /// <param name="message">Error message.</param>
+        public CoinbaseException(string message)
+          : base(message)
+        {
+        }
 
-    public CoinbaseException(string message, System.Exception cause)
-        : base(message, cause)
-    {
-    }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CoinbaseException"/> class from a cause.
+        /// </summary>
+        /// <param name="cause">Underlying exception.</param>
+        public CoinbaseException(System.Exception cause)
+            : base(cause.Message, cause)
+        {
+        }
 
-    public CoinbaseException(HttpStatusCode httpStatusCode, string message)
-        : base(message)
-    {
-        this.StatusCode = httpStatusCode;
-    }
+        public CoinbaseException(string message, System.Exception cause)
+            : base(message, cause)
+        {
+        }
 
-    public CoinbaseException(HttpStatusCode httpStatusCode, string message, System.Exception cause)
-        : base(message, cause)
-    {
-        this.StatusCode = httpStatusCode;
-    }
+        public CoinbaseException(HttpStatusCode httpStatusCode, string message)
+            : base(message)
+        {
+            this.StatusCode = httpStatusCode;
+        }
 
-    public HttpStatusCode StatusCode { get; set; }
+        public CoinbaseException(HttpStatusCode httpStatusCode, string message, System.Exception cause)
+            : base(message, cause)
+        {
+            this.StatusCode = httpStatusCode;
+        }
 
-    public override string ToString()
-    {
-      return $"CoinbaseException{{StatusCode={this.StatusCode}, Message={this.Message}}}";
+        public HttpStatusCode StatusCode { get; set; }
+
+        public override string ToString()
+        {
+            return $"CoinbaseException{{StatusCode={this.StatusCode}, Message={this.Message}}}";
+        }
     }
-  }
 }

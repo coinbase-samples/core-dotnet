@@ -16,14 +16,14 @@
 
 namespace CoinbaseSdk.Core.Http
 {
-  using System.Threading;
-  using System.Threading.Tasks;
+    using System.Threading;
+    using System.Threading.Tasks;
 
-  public interface IHttpClient
-  {
-    Task<CoinbaseResponse> SendAsyncRequest(
-        CoinbaseHttpRequest request,
-        CallOptions callOptions,
-        CancellationToken cancellationToken);
-  }
+    public interface IHttpClient
+    {
+        Task<CoinbaseResponse> SendAsyncRequest(
+            CoinbaseHttpRequest request,
+            CallOptions callOptions,
+            CancellationToken cancellationToken);
+    }
 }

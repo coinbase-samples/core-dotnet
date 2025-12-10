@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-present Coinbase Global, Inc.
+ * Copyright 2025-present Coinbase Global, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-namespace CoinbaseSdk.Core.Error
+namespace CoinbaseSdk.Core.Http
 {
-    public interface ICoinbaseErrorMessage
+    using System;
+
+    /// <summary>
+    /// Default configuration values for HTTP client behavior.
+    /// </summary>
+    public static class HttpClientDefaults
     {
-        public CoinbaseException CreateCoinbaseException();
+        /// <summary>
+        /// Default timeout for HTTP requests (15 seconds).
+        /// </summary>
+        public static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(15);
     }
 }

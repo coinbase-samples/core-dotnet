@@ -16,76 +16,79 @@
 
 namespace CoinbaseSdk.Core.Service
 {
-  using System.Net;
-  using System.Net.Http;
-  using System.Threading;
-  using System.Threading.Tasks;
-  using CoinbaseSdk.Core.Client;
-  using CoinbaseSdk.Core.Http;
-
-  /// <summary>
-  /// Abstract class that represents any Coinbase API Service.
-  /// </summary>
-  public abstract class CoinbaseService
-  {
-    private ICoinbaseClient client;
-
-    protected CoinbaseService()
-    {
-    }
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using CoinbaseSdk.Core.Client;
+    using CoinbaseSdk.Core.Http;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CoinbaseService"/> class with a
-    /// custom <see cref="ICoinbaseClient"/>.
+    /// Abstract class that represents any Coinbase API Service.
     /// </summary>
-    /// <param name="client">The client used by the service to send requests.</param>
-    protected CoinbaseService(ICoinbaseClient client)
+    public abstract class CoinbaseService
     {
-      this.client = client;
-    }
+        private ICoinbaseClient client;
 
-    public ICoinbaseClient Client
-    {
-      get => this.client;
-      set => this.client = value;
-    }
+        protected CoinbaseService()
+        {
+        }
 
-    /// <summary>
-    /// Send a synchronous request to the Coinbase Service Endpoint.
-    /// </summary>
-    /// <typeparam name="T">Return type of the Request.</typeparam>
-    /// <param name="method">HTTP Method for the Request.</param>
-    /// <param name="path">API Path.</param>
-    /// <param name="expectedStatusCodes">Set of expected Status Code.</param>
-    /// <param name="request">Request Object.</param>
-    /// <param name="callOptions"><see cref="CallOptions"/>.</param>
-    /// <returns></returns>
-    protected T Request<T>(
-        HttpMethod method,
-        string path,
-        HttpStatusCode[] expectedStatusCodes,
-        object request = null,
-        CallOptions callOptions = null)
-    {
-      return this.RequestAsync<T>(method, path, expectedStatusCodes, request, callOptions, default)
-          .ConfigureAwait(false).GetAwaiter().GetResult();
-    }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CoinbaseService"/> class with a
+        /// custom <see cref="ICoinbaseClient"/>.
+        /// </summary>
+        /// <param name="client">The client used by the service to send requests.</param>
+        protected CoinbaseService(ICoinbaseClient client)
+        {
+            this.client = client;
+        }
 
-    protected async Task<T> RequestAsync<T>(
-        HttpMethod method,
-        string path,
-        HttpStatusCode[] expectedStatusCodes,
-        object request = null,
-        CallOptions callOptions = null,
-        CancellationToken cancellationToken = default)
-    {
-      return await this.Client.SendRequestAsync<T>(
-          method,
-          path,
-          request,
-          expectedStatusCodes,
-          cancellationToken,
-          callOptions).ConfigureAwait(false);
+        /// <summary>
+        /// Gets or sets the client used by the service to send requests.
+        /// </summary>
+        protected ICoinbaseClient Client
+        {
+            get => this.client;
+            set => this.client = value;
+        }
+
+        /// <summary>
+        /// Send a synchronous request to the Coinbase Service Endpoint.
+        /// </summary>
+        /// <typeparam name="T">Return type of the Request.</typeparam>
+        /// <param name="method">HTTP Method for the Request.</param>
+        /// <param name="path">API Path.</param>
+        /// <param name="expectedStatusCodes">Set of expected Status Code.</param>
+        /// <param name="request">Request Object.</param>
+        /// <param name="callOptions"><see cref="CallOptions"/>.</param>
+        /// <returns></returns>
+        protected T Request<T>(
+            HttpMethod method,
+            string path,
+            HttpStatusCode[] expectedStatusCodes,
+            object request = null,
+            CallOptions callOptions = null)
+        {
+            return this.RequestAsync<T>(method, path, expectedStatusCodes, request, callOptions, default)
+                .ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        protected async Task<T> RequestAsync<T>(
+            HttpMethod method,
+            string path,
+            HttpStatusCode[] expectedStatusCodes,
+            object request = null,
+            CallOptions callOptions = null,
+            CancellationToken cancellationToken = default)
+        {
+            return await this.Client.SendRequestAsync<T>(
+                method,
+                path,
+                request,
+                expectedStatusCodes,
+                cancellationToken,
+                callOptions).ConfigureAwait(false);
+        }
     }
-  }
 }

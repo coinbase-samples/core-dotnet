@@ -16,113 +16,124 @@
 
 namespace CoinbaseSdk.Core.Http
 {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Net.Http;
-  using System.Text.Json;
-  using CoinbaseSdk.Core.Credentials;
-  using CoinbaseSdk.Core.Error;
-  using CoinbaseSdk.Core.Serialization;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Text.Json;
+    using CoinbaseSdk.Core.Credentials;
+    using CoinbaseSdk.Core.Error;
+    using CoinbaseSdk.Core.Serialization;
 
-  public class CoinbaseHttpRequest
-  {
-    private readonly string body;
-    private readonly IJsonUtility jsonUtility;
-    private Dictionary<string, string> headers;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CoinbaseHttpRequest"/> class.
-    /// </summary>
-    /// <param name="path">Path for the request.</param>
-    /// <param name="method">HttpMethod for the request.</param>
-    /// <param name="credentials">Instance of <see cref="CoinbaseCredentials"/>.</param>
-    /// <param name="request">RequestOptions Object.</param>
-    /// <param name="jsonUtility">Instance of <see cref="IJsonUtility"/>.</param>
-    /// <exception cref="CoinbaseClientException">If unexpected HttpMethod provided.</exception>
-    public CoinbaseHttpRequest(
-      string path,
-      string method,
-      CoinbaseCredentials credentials,
-      object request,
-      IJsonUtility jsonUtility)
+    public class CoinbaseHttpRequest
     {
-      this.jsonUtility = jsonUtility;
-      this.Method = new HttpMethod(method);
-      if (this.Method == HttpMethod.Post || this.Method == HttpMethod.Put || this.Method == HttpMethod.Patch)
-      {
-        this.body = jsonUtility.Serialize(request);
-        this.Uri = this.BuildUri(path);
-      }
-      else if (this.Method == HttpMethod.Get || this.Method == HttpMethod.Delete)
-      {
-        this.body = string.Empty;
-        this.Uri = this.BuildUri(path, request);
-      }
-      else
-      {
-        throw new CoinbaseClientException("Unsupported HTTP Method: " + this.Method);
-      }
+        private readonly string body;
+        private readonly IJsonUtility jsonUtility;
+        private Dictionary<string, string> headers;
 
-      this.headers = this.BuildHeaders(this.Uri.AbsolutePath, method, credentials);
-    }
-
-    public Uri Uri { get; }
-
-    public HttpMethod Method { get; }
-
-    public Dictionary<string, string> Headers => this.headers;
-
-    public string Content => this.body;
-
-    private Uri BuildUri(string baseUri, object request = null)
-    {
-      var uriBuilder = new UriBuilder($"https://{baseUri}")
-      {
-        Query = this.ToQueryString(request),
-      };
-
-      return uriBuilder.Uri;
-    }
-
-    protected virtual Dictionary<string, string> BuildHeaders(string path, string method, CoinbaseCredentials credentials)
-    {
-      var headers = new Dictionary<string, string>();
-
-      // generate a timestamp and use that in both sign and the timestamp header
-      var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
-
-      headers.Add("X-CB-ACCESS-KEY", credentials.AccessKey);
-      headers.Add("X-CB-ACCESS-SIGNATURE", credentials.Sign(timestamp, method, path, this.body));
-      headers.Add("X-CB-ACCESS-TIMESTAMP", timestamp);
-      headers.Add("X-CB-ACCESS-PASSPHRASE", credentials.Passphrase);
-
-      return headers;
-    }
-
-    private string ToQueryString(object obj)
-    {
-      if (obj == null)
-      {
-        return string.Empty;
-      }
-
-      var jsonString = this.jsonUtility.Serialize(obj);
-      var dictionary = this.jsonUtility.Deserialize<Dictionary<string, object>>(jsonString);
-
-      return string.Join("&", dictionary
-          .Where(kvp => kvp.Value != null)
-          .SelectMany(kvp =>
-          {
-            if (kvp.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CoinbaseHttpRequest"/> class.
+        /// </summary>
+        /// <param name="path">Path for the request.</param>
+        /// <param name="method">HttpMethod for the request.</param>
+        /// <param name="credentials">Instance of <see cref="CoinbaseCredentials"/>.</param>
+        /// <param name="request">RequestOptions Object.</param>
+        /// <param name="jsonUtility">Instance of <see cref="IJsonUtility"/>.</param>
+        /// <exception cref="CoinbaseClientException">If unexpected HttpMethod provided.</exception>
+        public CoinbaseHttpRequest(
+          string path,
+          string method,
+          CoinbaseCredentials credentials,
+          object request,
+          IJsonUtility jsonUtility)
+        {
+            this.jsonUtility = jsonUtility;
+            this.Method = new HttpMethod(method);
+            if (this.Method == HttpMethod.Post || this.Method == HttpMethod.Put || this.Method == HttpMethod.Patch)
             {
-              return jsonElement.EnumerateArray().Select(item => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(item.ToString())}");
+                this.body = jsonUtility.Serialize(request);
+                this.Uri = this.BuildUri(path);
+            }
+            else if (this.Method == HttpMethod.Get || this.Method == HttpMethod.Delete)
+            {
+                this.body = string.Empty;
+                this.Uri = this.BuildUri(path, request);
             }
             else
             {
-              return new[] { $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString())}" };
+                throw new CoinbaseClientException("Unsupported HTTP Method: " + this.Method);
             }
-          }));
+
+            this.headers = this.BuildHeaders(this.Uri.AbsolutePath, method, credentials);
+        }
+
+        public Uri Uri { get; }
+
+        public HttpMethod Method { get; }
+
+        public Dictionary<string, string> Headers => this.headers;
+
+        public string Content => this.body;
+
+        private Uri BuildUri(string baseUri, object request = null)
+        {
+            Uri uri;
+            if (baseUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                baseUri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                uri = new Uri(baseUri);
+            }
+            else
+            {
+                uri = new Uri($"https://{baseUri}");
+            }
+
+            var uriBuilder = new UriBuilder(uri)
+            {
+                Query = this.ToQueryString(request),
+            };
+
+            return uriBuilder.Uri;
+        }
+
+        protected virtual Dictionary<string, string> BuildHeaders(string path, string method, CoinbaseCredentials credentials)
+        {
+            var headers = new Dictionary<string, string>();
+
+            // generate a timestamp and use that in both sign and the timestamp header
+            var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+
+            headers.Add("X-CB-ACCESS-KEY", credentials.AccessKey);
+            headers.Add("X-CB-ACCESS-SIGNATURE", credentials.Sign(timestamp, method, path, this.body));
+            headers.Add("X-CB-ACCESS-TIMESTAMP", timestamp);
+            headers.Add("X-CB-ACCESS-PASSPHRASE", credentials.Passphrase);
+
+            return headers;
+        }
+
+        private string ToQueryString(object obj)
+        {
+            if (obj == null)
+            {
+                return string.Empty;
+            }
+
+            var jsonString = this.jsonUtility.Serialize(obj);
+            var dictionary = this.jsonUtility.Deserialize<Dictionary<string, object>>(jsonString);
+
+            return string.Join("&", dictionary
+                .Where(kvp => kvp.Value != null)
+                .SelectMany(kvp =>
+                {
+                    if (kvp.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array)
+                    {
+                        return jsonElement.EnumerateArray().Select(item => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(item.ToString())}");
+                    }
+                    else
+                    {
+                        return new[] { $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString())}" };
+                    }
+                }));
+        }
     }
-  }
 }

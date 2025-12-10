@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <Description>CoinbaseSdk.Core is the core library for .NET Coinbase SDKs.</Description>
-    <Version>0.0.1</Version>
-    <LangVersion>11</LangVersion>
-    <Authors>Coinbase Solutions Architecture</Authors>
+    <Version>0.1.0</Version>
+    <LangVersion>12</LangVersion>
+    <Authors>Coinbase</Authors>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <PackageTags>coinbase</PackageTags>
     <PackageProjectUrl>https://github.com/coinbase-samples/core-dotnet</PackageProjectUrl>
@@ -29,6 +29,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Polly" Version="7.2.4" />
+    <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
     <None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
@@ -52,6 +54,7 @@
 
   <ItemGroup>
     <None Include="..\..\..\LICENSE" Pack="true" PackagePath="" />
+    <InternalsVisibleTo Include="CoinbaseSdk.Core.Tests" />
   </ItemGroup>
 
 </Project>

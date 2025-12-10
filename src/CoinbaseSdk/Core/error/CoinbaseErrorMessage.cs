@@ -16,18 +16,18 @@
 
 namespace CoinbaseSdk.Core.Error
 {
-  public class CoinbaseErrorMessage : ICoinbaseErrorMessage
-  {
-    public CoinbaseErrorMessage(string message)
+    public class CoinbaseErrorMessage : ICoinbaseErrorMessage
     {
-      this.Message = message;
-    }
+        public CoinbaseErrorMessage(string message)
+        {
+            this.Message = message;
+        }
 
-    public string Message { get; set; }
+        public string Message { get; set; }
 
-    public CoinbaseException CreateCoinbaseException()
-    {
-      return new CoinbaseException(this.Message);
+        public CoinbaseException CreateCoinbaseException()
+        {
+            return new CoinbaseException(this.Message);
+        }
     }
-  }
 }
