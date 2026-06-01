@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>CoinbaseSdk.Core is the core library for .NET Coinbase SDKs.</Description>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <LangVersion>12</LangVersion>
     <Authors>Coinbase</Authors>
     <TargetFrameworks>net8.0</TargetFrameworks>
